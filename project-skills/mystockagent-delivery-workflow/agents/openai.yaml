@@ -1,0 +1,4 @@
+interface:
+  display_name: "MyStockAgent Delivery Workflow"
+  short_description: "Deliver MyStockAgent V3.2 with proportional prototype and release gates"
+  default_prompt: "Use $mystockagent-delivery-workflow to execute the next authorized MyStockAgent V3.2 work package."

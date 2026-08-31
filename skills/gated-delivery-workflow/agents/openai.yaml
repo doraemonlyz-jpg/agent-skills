@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gated Delivery Workflow"
+  short_description: "Execute approved work packages with strict delivery gates"
+  default_prompt: "Use $gated-delivery-workflow to select and execute the next approved work package in this repository."
