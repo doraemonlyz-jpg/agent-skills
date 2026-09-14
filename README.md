@@ -8,6 +8,7 @@ Reusable engineering skills and explicitly separated project-specific skills.
 - `technical-solution-workflow`: classifies each request as spike / bounded / architectural, clarifies requirements, reviews a versioned technical solution, and blocks coding until explicit approval. Ceremony scales with the task; the approval gate does not.
 - `coding-standards`: enforces coding quality, security, testing, and verification during implementation.
 - `gated-delivery-workflow`: executes repository-approved work packages through adapter-defined gates, verification, and handoff.
+- `context-handoff`: decides when a session must end and writes the handoff that auto-compaction destroys — grounded in 22 measured compaction events.
 
 Reusable skills live under `skills/` and can be installed independently.
 
