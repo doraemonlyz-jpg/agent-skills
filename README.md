@@ -48,3 +48,9 @@ project-owned adapter and V3.2 documents.
 30 cases across triggering accuracy, gate compliance, and adversarial
 gate-bypass attempts, plus the pre-refactor baseline for A/B comparison.
 See `evals/README.md`.
+
+## Setup
+
+`setup/` 里是两个 Agent 的 statusline 配置，用来显示上下文用量、判断何时该开新会话。
+`setup/install.sh` 一键装 Claude Code 与 Codex 两侧，详见 `setup/README.md`。
+

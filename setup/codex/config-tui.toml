@@ -1,0 +1,13 @@
+# 粘进 ~/.codex/config.toml
+# 可选字段仅这 6 个，Codex 目前不支持自定义命令（openai/codex#17827 未合并）
+
+[tui]
+status_line = [
+  "model-with-reasoning",
+  "current-dir",
+  "context-usage",
+  "used-tokens",
+  "five-hour-limit",
+  "weekly-limit",
+]
+terminal_title = ["project", "git-branch", "status"]
