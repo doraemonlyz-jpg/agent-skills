@@ -139,3 +139,25 @@ schema 里还有两个我之前没提的：
 ---
 
 *本报告全部结论来自你本机 `~/.codex/sessions/` 的实际数据，只读分析，未修改任何文件。*
+
+---
+
+## 追加实测（2026-09-14 晚）
+
+258K **不是 Astra 的上限，是 Codex 的会话工作预算**。模型本体约 1.05M。
+
+以下两个顶层键把预算开到 1M，`/status` 确认 `Context window: 100% left (0 used / 1M)`：
+
+```toml
+model_context_window = 1000000
+model_auto_compact_token_limit = 900000
+```
+
+验证环境：`gpt-6-astra` / Pro Lite 订阅 / 本地代理 `127.0.0.1:8788`。
+
+两条被推翻的二手说法：
+
+- 「这两个键只对 gpt-5.6-sol 有效」—— 对 Astra 同样生效
+- 「订阅制用户被截到 ~360K」—— Pro Lite 实测全开 1M
+
+结论：**别信绝对 token 数，按百分比判断**。预算可配置、随模型和客户端版本变化。

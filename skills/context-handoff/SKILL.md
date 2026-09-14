@@ -29,7 +29,7 @@ Any ONE of these means **end it now** — they are tests, not judgment calls:
 
 | Condition | Why |
 |---|---|
-| **Context ≥ 70% used** | Compaction fires around 93%. Below 70% there is room to hand off cleanly; above it there may not be. |
+| **Context ≥ 70% used** | Compaction fires around 93% of the session budget. Below 70% there is room to hand off cleanly; above it there may not be. Use the percentage, never a token count — the budget is configurable and varies by model and client version. |
 | **Session started on an earlier calendar day** | User messages are never dropped by compaction, so a multi-day session carries a floor that only grows. |
 | **Compaction already fired once** | The next one comes sooner than the last. Interval shrinks roughly 40% across a long session. |
 | **Third distinct task in one session** | Tasks do not need each other's history. Each one inherited is pure cost. |
@@ -118,6 +118,20 @@ Measured on 22 real compaction events in a single 8-day Codex session
 - Triggered at 219K–250K input tokens (median 239K) against a 258K window
 - The replacement summary is `encrypted_content` — **not auditable locally**,
   so never assume it preserved anything specific
+
+**The window is not fixed.** Codex allocates a session working budget that is far
+smaller than the model's real context — Astra measured 258K against a ~1M model.
+Two top-level `config.toml` keys raise it, verified working on a Pro Lite
+subscription 2026-09-14:
+
+```toml
+model_context_window = 1000000
+model_auto_compact_token_limit = 900000
+```
+
+Check the actual number with `/status` before trusting it; the keys are
+undocumented for some models. Everything above is stated in **percentages** for
+exactly this reason — the thresholds hold whether the budget is 258K or 1M.
 
 The last point is why the Done list is written by hand rather than trusted to
 the summary.
