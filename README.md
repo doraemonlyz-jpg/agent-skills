@@ -16,16 +16,9 @@ Reusable skills live under `skills/` and can be installed independently.
 Third-party skills copied in verbatim. Each carries a `.upstream` file recording
 the source repo and commit it was taken from.
 
-- `brainstorming`: turns an idea into a design through dialogue; classifies work as
-  spike / bounded / architectural and gates implementation on approval.
-  (obra/superpowers)
 - `interview-me`: deep-dive spec interviewer — analyses a requirement against the
   codebase, interviews with active pushback, produces an opinionated spec.
   Supports `--verify` for spec/code drift detection. (Sorbh/interview-me)
-
-Note: `brainstorming` overlaps with `technical-solution-workflow` by design — the
-latter absorbed its classification and hard-gate model. Enabling both at once will
-cause trigger contention; prefer one.
 
 ## Project-specific Skills
 

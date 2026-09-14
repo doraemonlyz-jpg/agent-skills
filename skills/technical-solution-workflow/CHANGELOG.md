@@ -12,7 +12,8 @@
 
 ### 新增 — 任务分级与硬闸门
 
-思路取自 `skills/brainstorming`（obra/superpowers @b36e082）：
+思路取自 obra/superpowers 的 `brainstorming` skill（@b36e082）。该 skill 曾短暂
+vendor 在本仓库，思路吸收完成后于 2026-09-14 移除，不再作为独立 skill 维护：
 
 - **Stage 0 任务分级**：spike / bounded / architectural 三条路径，首条回复必须
   说出判断结果，用户可当场推翻
@@ -67,5 +68,4 @@ SKILL.md 775 → 347 行，以下移入 `references/`，按需加载：
 - 轻路径（bounded）长对话下的长度反噬——现有那条走的是 architectural 路径，
   区分度为零
 - 30 条 case 中剩余的 22 条
-- `brainstorming` 对照 arm
 - 真实多轮会话（而非一次性生成）下的长度反噬

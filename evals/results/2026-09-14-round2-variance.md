@@ -84,5 +84,5 @@ AD-07 的裸模型失效方式最值得看：它**没有**把"看起来不错"�
 
 - [ ] 轻路径（bounded）的长对话，用于真正测长度反噬
 - [ ] 剩余 22 条 case
-- [ ] `bs`（brainstorming）对照 arm
+- [~] `bs`（brainstorming）对照 arm —— 已放弃：brainstorming 于 2026-09-14 移除出本仓库
 - [ ] 真实多轮会话（非一次性生成）下的长度反噬

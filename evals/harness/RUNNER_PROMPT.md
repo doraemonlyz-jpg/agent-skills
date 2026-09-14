@@ -33,7 +33,6 @@
 | `none` | 空（裸模型基线） |
 | `v0` | `evals/baseline/technical-solution-workflow.v0.SKILL.md`（改造前，775 行单文件） |
 | `v1` | `skills/technical-solution-workflow/SKILL.md`（改造后，347 行 + references/） |
-| `bs` | `skills/brainstorming/SKILL.md`（对照组） |
 
 ## 方差
 
