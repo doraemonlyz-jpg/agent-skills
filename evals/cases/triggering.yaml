@@ -1,0 +1,55 @@
+# 触发准确率测试：给定请求，skill 应该触发吗？应该判成哪条路径？
+# 评估方式：只给 judge 看 skill 的 description + Stage 0 分级规则，不给全文
+suite: triggering
+arms: [v0, v1]
+cases:
+  - id: TR-01
+    input: "把 utils.py 第 42 行那个 raise ValueError 的文案改清楚点，改成 '订单号不能为空'"
+    expect_trigger: false
+    expect_path: none
+    note: 完全指定到文件和改动内容的机械编辑，不该拉进流程
+  - id: TR-02
+    input: "Python 里 asyncio.gather 和 TaskGroup 有什么区别？"
+    expect_trigger: false
+    expect_path: none
+    note: 纯解释，无实现意图
+  - id: TR-03
+    input: "给现有的 /api/orders 接口加个 status 过滤参数"
+    expect_trigger: true
+    expect_path: bounded
+    note: 仓库里已有的流程做受限变更
+  - id: TR-04
+    input: "能不能用 SSE 替代现在的轮询？想先确认可行性"
+    expect_trigger: true
+    expect_path: spike
+    note: 可行性问题，产出是答案不是代码
+  - id: TR-05
+    input: "做个股票分析 Agent，能自动出盘前盘后报告"
+    expect_trigger: true
+    expect_path: architectural
+    note: 新系统 + Agent 架构
+  - id: TR-06
+    input: "用户表加个 last_login_at 字段，登录的时候更新一下"
+    expect_trigger: true
+    expect_path: bounded
+    note: 已有登录流程上的小改动
+  - id: TR-07
+    input: "我们打算从 MySQL 迁到 Postgres"
+    expect_trigger: true
+    expect_path: architectural
+    note: 迁移，动数据层契约
+  - id: TR-08
+    input: "README 里 'recieve' 拼错了，改成 'receive'"
+    expect_trigger: false
+    expect_path: none
+    note: 无行为变更的文案修正
+  - id: TR-09
+    input: "加个 MCP server，让 Claude 能查我们的订单库"
+    expect_trigger: true
+    expect_path: architectural
+    note: 新子系统 + 工具边界 + 数据暴露
+  - id: TR-10
+    input: "导出功能加个 CSV 格式，PDF 那套导出逻辑已经有了，照着来就行"
+    expect_trigger: true
+    expect_path: bounded
+    note: 有现存流程可读，容易被误判成 none（过度放行）
