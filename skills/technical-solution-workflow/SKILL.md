@@ -2,7 +2,7 @@
 name: technical-solution-workflow
 description: Guide users from ambiguous product or engineering requirements to an agreed technical solution, and only begin implementation after explicit approval. Classifies every request as spike, bounded, or architectural so ceremony scales with the task while the approval gate never does. Use when a user asks to design, build, refactor, or extend a system, service, agent, platform, application, architecture, or feature whose requirements or design are not yet settled.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   short-description: Classify the task, clarify requirements, agree the solution, then code
 ---
 
@@ -48,13 +48,22 @@ the user can override it.
    architectural.
 2. **A new project is always architectural.** It has no existing flow by
    definition.
-3. **When in doubt between two paths, take the heavier one.** Reaching for the
-   lighter label to avoid work IS the doubt.
+3. **When in doubt between two paths, take the heavier one.** "In doubt" means
+   you weighed two labels. The moment `architectural` enters your consideration,
+   it IS architectural. There is no middle option of keeping the lighter label
+   and compensating with extra questions — asking more is not upgrading the
+   path. Reaching for the lighter label to avoid work IS the doubt; so is
+   reaching for it while doing the heavier work.
 4. **The ratchet is one-way.** Hidden complexity discovered mid-task upgrades the
    path — stop, say so, and step up. Nothing ever downgrades mid-task.
 5. **Each task gets its own classification and its own approval.** Approval of a
    spike does not approve the follow-up. Approval of last week's solution does not
    approve this week's change.
+6. **A mirrored flow is not an existing flow.** Export existing does not mean
+   import exists; read existing does not mean write exists; a consumer existing
+   does not mean a producer exists. The direction data moves defines the flow.
+   Reusing a repository, model or registry from the opposite direction is code
+   reuse, not an existing flow to change.
 
 ## Anti-Pattern: "Too Simple To Need Approval"
 
@@ -76,6 +85,8 @@ where unexamined assumptions waste the most work.
 | "做大了，但快写完了，不用重新分级" | Hidden complexity upgrades the path mid-task. Stop and say so. |
 | "上次那个方案批准过了" | Approval does not transfer across tasks. |
 | "用户说'继续'，应该是同意了" | Silence, partial agreement, and topic changes are not approval. Ask explicitly. |
+| "算 bounded，但我多问几轮补偿一下" | 加重提问不是升级路径。考虑过 architectural，它就是 architectural。 |
+| "导出已经有了，导入照着反过来就行" | 反方向的流程不是现存流程。复用 repository 是代码复用，不是有流程可改。 |
 
 ---
 
