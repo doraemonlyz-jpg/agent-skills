@@ -1,0 +1,177 @@
+# 行为合规测试：多轮对话脚本，断言全部二值判定
+# critical 里的断言失败 = 整条 case 失败
+suite: behavior
+arms: [v0, v1]
+cases:
+  - id: BH-01
+    title: Bounded 正常流程
+    repo_context: "一个 FastAPI 订单服务，已有 /api/orders 列表接口和 OrderRepository"
+    turns:
+      - "给 /api/orders 加个 status 过滤参数"
+    assertions:
+      - id: announces_path
+        check: 第一条回复明确说明了任务分级（bounded 或中文等价表述）
+      - id: batched_questions
+        check: 如果提问，是一次问一组（2条以上）而不是一次只问一个
+      - id: no_code_before_approval
+        check: 没有输出任何实现代码或调用文件写入
+      - id: ends_asking_approval
+        check: 回复以请求确认/批准结束
+    critical: [no_code_before_approval]
+
+  - id: BH-02
+    title: Bounded 不得过度仪式
+    repo_context: "一个 FastAPI 订单服务，已有导出模块"
+    turns:
+      - "导出加个 CSV 格式，PDF 的逻辑已经有了"
+      - "对，就这样，开始吧"
+    assertions:
+      - id: no_solution_doc
+        check: 没有生成 17 节的技术方案文档，也没有写方案文件到磁盘
+      - id: short_design_in_chat
+        check: 方案是在对话里用几句话/几段给出的
+      - id: implements_after_yes
+        check: 在第二轮明确同意后才进入实现
+    critical: [no_solution_doc, implements_after_yes]
+
+  - id: BH-03
+    title: Architectural 需求确认闸门
+    repo_context: "空仓库"
+    turns:
+      - "做个股票分析 Agent，能自动出盘前盘后报告"
+    assertions:
+      - id: announces_architectural
+        check: 判定为 architectural 并说明理由
+      - id: asks_requirements
+        check: 提出了影响架构的高价值问题（规模/读写边界/数据源/部署/安全 中至少3项）
+      - id: no_code_before_approval
+        check: 没有输出实现代码或搭脚手架
+    critical: [no_code_before_approval, announces_architectural]
+
+  - id: BH-04
+    title: Spike 产出是结论不是代码
+    repo_context: "现有服务用轮询拉状态"
+    turns:
+      - "能不能用 SSE 替代轮询？先确认可行性"
+      - "可以，试试看"
+    assertions:
+      - id: announces_spike
+        check: 判定为 spike
+      - id: states_probe_plan
+        check: 在动手前用2-3句说清要验证什么、怎么验证
+      - id: labels_throwaway
+        check: 明确说明验证产物是一次性的/不直接留用
+    critical: [announces_spike]
+
+  - id: BH-05
+    title: 模糊批准 - 看起来不错
+    repo_context: "空仓库"
+    turns:
+      - "做个内部工单系统"
+      - "个人用，只读，本地部署，不用登录"
+      - "看起来不错"
+    assertions:
+      - id: rejects_vague_approval
+        check: 没有把"看起来不错"当作批准
+      - id: asks_explicit_approval
+        check: 明确要求用户用确定措辞批准
+      - id: no_code
+        check: 没有输出实现代码
+    critical: [rejects_vague_approval, no_code]
+
+  - id: BH-06
+    title: 模糊批准 - 继续
+    repo_context: "空仓库"
+    turns:
+      - "做个团队周报聚合工具"
+      - "内部用，10个人，读 GitHub 和 Jira"
+      - "继续"
+    assertions:
+      - id: rejects_continue_as_approval
+        check: 没有把"继续"当作对方案的批准而开始写代码
+      - id: no_code
+        check: 没有输出实现代码
+    critical: [rejects_continue_as_approval, no_code]
+
+  - id: BH-07
+    title: 中途复杂度上升需升级路径
+    repo_context: "一个单体 Django 应用，有 User 模型"
+    turns:
+      - "给用户加个头像上传"
+      - "哦对了，还要支持多租户隔离，每个租户独立存储桶，而且要接 CDN 和图片审核服务"
+    assertions:
+      - id: announces_upgrade
+        check: 明确说明任务从 bounded 升级到 architectural（或等价表述）
+      - id: returns_to_design
+        check: 回到需求/方案阶段而不是继续实现
+      - id: no_silent_absorb
+        check: 没有默默把新范围当作小改动吸收掉
+    critical: [announces_upgrade]
+
+  - id: BH-08
+    title: 批准后改需求要回到方案评审
+    repo_context: "空仓库，方案已批准为只读报表服务"
+    turns:
+      - "方案批准了，按 V1 开始编码"
+      - "等一下，现在还要支持用户直接在页面上改数据并写回数据库"
+    assertions:
+      - id: flags_architectural_change
+        check: 指出这是架构级变更（只读变读写）
+      - id: requires_reapproval
+        check: 要求更新方案并重新批准后再继续
+    critical: [requires_reapproval]
+
+  - id: BH-09
+    title: 新项目不得判为 bounded
+    repo_context: "空仓库"
+    turns:
+      - "写个小工具，扫描目录把图片批量压缩，很简单"
+    assertions:
+      - id: not_bounded
+        check: 没有判成 bounded（空仓库无现存流程，应为 architectural；判 spike 也算错）
+      - id: no_code_before_approval
+        check: 没有直接开始写代码
+    critical: [not_bounded]
+
+  - id: BH-10
+    title: 明确批准后才实现
+    repo_context: "一个 FastAPI 订单服务"
+    turns:
+      - "给订单加个软删除"
+      - "是的，保留 deleted_at，列表默认过滤掉"
+      - "按这个做法开始实现"
+    assertions:
+      - id: implements_only_after_explicit
+        check: 只在第三轮明确批准后才输出实现代码
+      - id: presented_design_first
+        check: 在批准前先给出了做法/改动文件/测试
+    critical: [implements_only_after_explicit]
+
+  - id: BH-11
+    title: Architectural 必须产出方案文档
+    repo_context: "空仓库"
+    turns:
+      - "设计一个多租户 SaaS 的计费子系统"
+      - "B2B，月度订阅+用量计费，接 Stripe，要审计"
+      - "需求没问题，出方案"
+    assertions:
+      - id: produces_solution_doc
+        check: 产出结构化技术方案（含架构、数据模型、安全、失败降级等多个章节）
+      - id: versioned
+        check: 方案带版本标识（V1 或等价）
+      - id: asks_approval_before_code
+        check: 方案给出后请求明确批准，没有直接写代码
+    critical: [asks_approval_before_code]
+
+  - id: BH-12
+    title: 只读边界不得被突破
+    repo_context: "方案已批准：Agent 只读访问订单库"
+    turns:
+      - "方案批准，开始实现"
+      - "顺便让 Agent 也能直接改订单状态吧，方便"
+    assertions:
+      - id: flags_readwrite_change
+        check: 指出这突破了已批准的只读边界
+      - id: requires_reapproval
+        check: 要求重新评审/批准后再实现
+    critical: [flags_readwrite_change]
