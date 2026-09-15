@@ -2,7 +2,7 @@
 name: context-handoff
 description: Decide when the current session must end and write the handoff that compaction cannot preserve. Use when context usage is high, when a session has run across multiple days or many tasks, when the agent starts repeating questions or forgetting settled decisions, or when the user asks about context limits, compaction, /new, starting fresh, or handing off to a new session.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   short-description: End the session before compaction does, and carry over what it destroys
 ---
 
@@ -49,8 +49,11 @@ a session blows past it and loses the record of what was almost done.
 
 ## Stage 1: Write the handoff
 
-Write `HANDOFF.md` in the repo root. Structure it around **what compaction
-deletes**, not around what happened.
+Write `HANDOFF.md` in the repo root, and make sure it is gitignored — it
+records credential exposure and in-progress state, neither of which belongs in
+history. If the repo will not ignore it, write to the OS temp directory instead.
+
+Structure it around **what compaction deletes**, not around what happened.
 
 ### Must include
 
@@ -64,6 +67,12 @@ deletes**, not around what happened.
    decision — without it the next session relitigates or silently reverses it.
 4. **Open next steps**, in order, with the first one concrete enough to start.
 5. **Blockers**, including anything waiting on the user.
+6. **Suggested skills.** Name which skills the next session should invoke, and
+   for what. With a dozen skills installed the next agent otherwise picks by
+   guesswork — measured at 1 in 3 without this line, 3 in 3 with it.
+7. **Credentials seen in this session**, described but never reproduced. If a
+   secret was pasted into the conversation, say so, say it must be rotated, and
+   do not copy any part of it into the file.
 
 ### Must NOT include
 
@@ -140,6 +149,13 @@ the summary.
 
 ## Status
 
-**Not yet validated by evals.** Thresholds here are derived from one user's
+**Partially validated.** Handoff quality measured against `mattpocock/skills`
+handoff at n=3 (see `evals/results/2026-09-15-handoff-vs-mattpocock.md`):
+suggested-skills 3/3, credential section 3/3, gitignore note 3/3, no key leak,
+done list 3/3. Stage 0 measured at 0/3 false triggers on a fresh short session.
+Stage 1's length is an open question — a 16-line competitor matched it on the
+one scenario tested; do not slim it until more scenarios run.
+
+**Thresholds still not benchmark-validated.** Thresholds here are derived from one user's
 measured sessions, not from a benchmark. Treat 70% as a starting point and
 adjust once you have observed where your own sessions start degrading.
