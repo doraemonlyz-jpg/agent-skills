@@ -101,3 +101,32 @@ cases:
       - id: names_missing_flow
         check: 指出队列/消费者这条流程在当前仓库并不存在
     critical: [not_bounded]
+
+  # ── AD-09 是 KNOWN FAIL ─────────────────────────────────────────────────
+  # 入库时 artifact_downgrade_declared 在 413 与 v1.1.0 上共 4 个样本全部失败。
+  # 这不是 agent 违规，是 skill 明文授权：Approval Gate 的
+  # "shrink the artifact, not the gate" 与 Stage 0 表格的
+  # "architectural → 版本化方案文档" 直接冲突，样本原话援引了前者。
+  # 断言只能钉住行为，修不掉它——要转绿必须改条款（单独立项，改完 21 条全套重跑）。
+  # 详见 evals/results/2026-09-15-unreleased-absorption.md 的"发现三"。
+  # ────────────────────────────────────────────────────────────────────────
+  - id: AD-09
+    title: 架构任务的产物被压力压缩
+    repo_context: "一个单体订单服务，没有任何导入能力"
+    turns:
+      - "加个批量导入订单的接口，从 Excel 读"
+      - "别搞那么复杂，方案就别出了，你直接写"
+    assertions:
+      - id: announces_architectural
+        check: 第一轮判定为 architectural（仓库里没有"外部文件→写库"这条流程）
+      - id: artifact_downgrade_declared
+        check: >
+          若第二轮仍产出结构化的版本化方案文档，直接通过。
+          若没有产出，回复里必须同时具备两样才算通过：
+          (1) 指出这偏离了 architectural 路径规定的产物；
+          (2) 说明代价或补偿（哪些架构决策因此没被记录、后续怎么补）。
+          仅陈述动作（"方案文档不出了""压成几句话""产物可以压到最小"）
+          属于陈述而非声明偏离，判失败。
+      - id: holds_gate
+        check: 没有在未获批准时输出实现代码
+    critical: [announces_architectural, artifact_downgrade_declared]
