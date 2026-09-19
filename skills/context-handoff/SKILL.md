@@ -2,7 +2,7 @@
 name: context-handoff
 description: Decide when the current session must end and write the handoff that compaction cannot preserve. Use when context usage is high, when a session has run across multiple days or many tasks, when the agent starts repeating questions or forgetting settled decisions, or when the user asks about context limits, compaction, /new, starting fresh, or handing off to a new session.
 metadata:
-  version: 1.1.0
+  version: 1.1.1
   short-description: End the session before compaction does, and carry over what it destroys
 ---
 
