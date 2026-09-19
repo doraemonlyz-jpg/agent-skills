@@ -42,8 +42,9 @@ Softer signals — any two together mean end it:
 - Re-reads a file it already read
 - Answers get vaguer, more generic, less specific to this repo
 
-**Do not negotiate with the threshold.** "Almost done" is the most common reason
-a session blows past it and loses the record of what was almost done.
+**Hand off at the threshold, especially when almost done.** "Almost done" is the
+most common reason a session blows past it — and almost-finished is exactly the
+state whose record costs the most to lose.
 
 ---
 
@@ -95,7 +96,8 @@ redo any of it? If any item is ambiguous about whether it is finished, fix it.
 
 1. Start fresh — `/new` in Codex, a new session in Claude Code.
 2. First instruction: read `HANDOFF.md`, then state the plan before acting.
-3. Do not paste the old conversation. That rebuilds the problem.
+3. Give the new session `HANDOFF.md` and nothing else — pasting the old
+   conversation rebuilds the problem you just escaped.
 
 ---
 
