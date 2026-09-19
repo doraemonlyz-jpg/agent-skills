@@ -24,7 +24,11 @@ two sentences in chat for a small change, a versioned solution document for a ne
 system. The approval gate never scales. There is no task small enough to skip it.
 </HARD-GATE>
 
-Never skip a gate merely because a likely answer can be inferred.
+When you can infer the answer, state the inference and ask anyway — an inferable
+answer is still the user's to give.
+
+Whenever you present options, name the one you recommend and why. Options handed
+over without a recommendation push the decision back unchanged.
 
 ---
 
@@ -32,7 +36,8 @@ Never skip a gate merely because a likely answer can be inferred.
 
 Before your first question, classify the request and **say the classification
 out loud** — "这个我判断是 bounded，所以我直接在对话里给简要方案，不出文档" — so
-the user can override it.
+the user can override it. Wording for the announcement, the gates, and mid-task
+upgrades: `references/RESPONSE_TEMPLATES.md`.
 
 | Path | When | Questions | Artifact | Gate |
 |---|---|---|---|---|
@@ -90,24 +95,6 @@ where unexamined assumptions waste the most work.
 
 ---
 
-# Core Principles
-
-1. Classify before you question; announce the classification.
-2. Do not start coding from an unclear request.
-3. Ask only questions that materially affect scope, architecture, security, cost,
-   delivery, or acceptance.
-4. Group related questions instead of asking many tiny questions one by one.
-5. Record decisions as they are confirmed.
-6. Distinguish MVP requirements from future optimizations.
-7. Make a concrete recommendation whenever presenting options.
-8. Clearly explain tradeoffs and consequences.
-9. Do not treat silence, partial agreement, or topic changes as approval.
-10. Only begin coding after explicit approval.
-11. If the user changes a confirmed requirement, update the solution before coding.
-12. Ceremony scales down; the gate does not.
-
----
-
 # Trigger Conditions
 
 Use this skill whenever a request will change code or create a system and the
@@ -135,7 +122,7 @@ Stage 0: Classify (spike / bounded / architectural) — announce it
    ↓
  ┌─ spike ───────→ probe plan → nod → investigate → report recommendation
  │
- ├─ bounded ─────→ grouped questions → short design in chat → EXPLICIT YES → implement
+ ├─ bounded ─────→ ONE reply: grouped questions + short design → EXPLICIT YES → implement
  │
  └─ architectural→ Stage 1 discovery
                       ↓
@@ -168,8 +155,12 @@ Reach the clarity needed to make architecture decisions — no more.
 
 ## Questioning Rules
 
-**Batch 3–6 related questions per round.** Do not ask one question per message
-unless the user explicitly prefers that style.
+**Batch 3–6 related questions per round.** Ask one question per message only
+when the user asks for that style.
+
+**Ask only what materially affects scope, architecture, security, cost, delivery,
+or acceptance.** The test: if every answer leads to the same design, it is not a
+question — make it a recommended default and move on.
 
 Bad:
 
@@ -199,11 +190,42 @@ scheduled, cost, technology restrictions.
 The full question bank is in `references/REQUIREMENT_DIMENSIONS.md` — load it when
 you need dimension coverage, not by default.
 
+## Bounded: questions and design ride in one reply
+
+On the bounded path the grouped questions and the short design go out **together**,
+in a single reply: the questions, the recommended defaults, and the design those
+defaults produce (approach, files touched, testing). The user answers and approves
+in one turn instead of two.
+
+Write the design against your own recommended defaults. That is what makes it safe
+to send before the answers arrive — when the user changes a default you revise the
+design, which costs less than a round trip on every bounded task.
+
+**The one exception is an unknown you cannot branch over.** If the design can be
+written as "if the code is shaped like X do this, if like Y do that", write it that
+way and send it — an unknown you can branch over never justifies holding the design
+back. Only an unknown that makes even a conditional design meaningless earns a round
+of its own, and then you ask that one item alone and say what the design is waiting
+on.
+
 ## Stop Questioning at the Right Time
 
 Move on once these are clear: users, core workflows, data sources, read/write
 boundaries, security level, deployment environment, key outputs, MVP scope, major
 constraints. Minor preferences become defaults or future optimizations.
+
+**Sort what is left by sharpness, not by importance.** The test on any unresolved
+item is whether you can state the question precisely *now* — never whether you
+can answer it now:
+
+- **You can state it precisely** → log it as **Open**, even if nothing can
+  resolve it yet. Blocked is not the same as unclear.
+- **You cannot** → it is **fog**. Log the area in one line as **Not yet
+  specified** and move on. Keep a fuzzy area to that one line — it may sharpen
+  into several Open items later, or into none at all.
+
+Fog clears as decisions land, so re-read it each time a requirement is confirmed
+— that is the moment an area becomes statable.
 
 ## Requirement Decision Log
 
@@ -211,7 +233,8 @@ Maintain a compact log, labeling each item:
 
 - **Confirmed**
 - **Recommended default**
-- **Open**
+- **Open** — stated precisely, not yet resolved
+- **Not yet specified** — in scope, not yet sharp enough to state as a question
 - **Future optimization**
 
 ## Requirement Confirmation Gate
@@ -223,7 +246,10 @@ Before drafting the solution, present a concise requirement summary:
 ...
 ```
 
-Resolve any material open item before finalizing.
+Resolve any material Open item before finalizing. For anything still under
+**Not yet specified** at this point, make the call out loud: it is either out of
+scope for this task, or it is hidden complexity — and hidden complexity upgrades
+the path rather than waiting.
 
 ---
 
@@ -244,10 +270,31 @@ decision traces to a confirmed requirement. Section-by-section template:
 3. Update the decision log.
 4. Produce a revised version when material decisions change.
 5. Mark postponed items as future optimizations.
-6. Do not start coding during architecture review.
 
 Version names: **Technical Solution V1 / V2 / V3**. Bump the version when scope,
 architecture, data model, security, or deployment decisions change materially.
+
+## Which Decisions Are Worth Recording
+
+The solution document says what to build. A **decision record** — its own entry,
+kept after the build is done — costs a reader's attention forever, so it earns
+its place only when all three hold:
+
+1. **Hard to reverse.** Changing your mind later costs real work.
+2. **Surprising without context.** A future reader will look at this and ask
+   "why on earth this way?"
+3. **A real trade-off.** There were genuine alternatives and you picked one for
+   reasons you can state.
+
+Miss any one and skip it: an easily reversed decision just gets reversed, an
+unsurprising one prompts no question, and a decision with no alternative records
+only that you did the obvious thing.
+
+What usually passes all three: architectural shape, integration patterns between
+components, technology choices carrying lock-in, ownership and scope boundaries
+(the explicit no-s as much as the yes-s), deliberate deviations from the obvious
+path, and constraints invisible in the code — a compliance limit, a partner's
+latency contract.
 
 ## Approval Gate
 
@@ -306,8 +353,10 @@ For large projects use **Explore → Plan → Implement → Verify**:
 
 ## Coding Rules
 
-1. Never implement unapproved features.
-2. Never expose write-capable tools that were approved as read-only.
+1. Implement only what the approved solution names; anything beyond it is a new
+   request, and gets its own classification and approval.
+2. A tool approved as read-only ships read-only. Widening it to write needs its
+   own approval.
 3. Keep external integrations behind interfaces.
 4. Validate all external responses.
 5. Use deterministic code for critical calculations.
@@ -331,8 +380,8 @@ Pre-coding checklist: `references/CHECKLISTS.md`.
 3. If architectural, update the solution and re-obtain approval.
 4. Resume coding only after approval.
 
-Do not silently absorb major scope changes. A change that pushes a bounded task
-past the repo's existing flow is a path upgrade — announce it.
+A change that pushes a bounded task past the repo's existing flow is a path
+upgrade — stop and announce it before absorbing it.
 
 ---
 
@@ -351,9 +400,14 @@ Load on demand, not by default:
 
 # Expected Outcome
 
-1. An announced classification.
-2. A requirement decision log (bounded: inline; architectural: full).
-3. An artifact sized to the path.
-4. Explicit user approval — on every path.
-5. Code only after approval.
-6. Verification against acceptance criteria.
+Done means every one of these is true. Check each one against what actually
+happened in the session:
+
+1. The classification was said out loud, early enough for the user to override.
+2. Every confirmed requirement is in the decision log under its label, and
+   nothing is left under **Not yet specified**.
+3. The artifact matches the path — no solution document for a bounded task, no
+   chat-only design for an architectural one.
+4. The user's approval is quotable: you can point at the words they used.
+5. No implementation action predates those words.
+6. Every acceptance criterion has been checked against the thing actually built.

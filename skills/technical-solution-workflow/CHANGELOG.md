@@ -5,6 +5,109 @@
 
 ---
 
+## Unreleased — 吸收 mattpocock/skills 的三条判据 + Bounded 回复形态
+
+来源 `mattpocock/skills` @3cca18b 的 `wayfinder`、`domain-modeling`、
+`writing-for-agents`。三个 skill 都**没有安装**，只吸收判据，理由见末尾。
+
+SKILL.md 359 → 413 行。references 未改动。
+
+### 新增 — Stage 1 按锐度分拣未决项（wayfinder 的 fog of war）
+
+原文只说了何时停止提问，没说停下来的东西该怎么记。判据是**能不能现在把问题说
+清楚**，而不是能不能现在回答它：说得清记 **Open**（被阻塞≠不清楚），说不清一行
+记 **Not yet specified**，不预先把雾切成问题的形状。决策日志因此从四个标签变五
+个；需求确认闸门新增处置规则：闸门时仍在雾里的，要么明说出了范围，要么就是隐藏
+复杂度，按单向棘轮升级路径。
+
+### 新增 — Stage 2「哪些决策值得单独记录」（domain-modeling 的 ADR 三门槛）
+
+难回退 / 不说会让人困惑 / 真有取舍，三条全中才记。只吸收判据，**没有**引入
+`docs/adr/` 目录、编号规则或 `CONTEXT.md` 文件机制。
+
+### 新增 — Bounded: questions and design ride in one reply
+
+由 BH-02 的 n=5 结果驱动（见下）。载荷不在"同轮给出"这句话本身，而在配套的例外
+测试：**未知能不能被分支覆盖**。能写成"代码若是 X 形态就这样、若是 Y 形态就那
+样"的未知，一律不许用来扣住方案；只有让条件式方案都失去意义的未知，才配单独一
+轮。这条判据是从转录里提炼的——通过与失败的样本，差别正好落在有没有把未知分支化。
+
+### 移除 — Core Principles 整节（12 条）
+
+按 writing-for-agents 的 single-source-of-truth 与 no-op 测试逐条过：10 条是别处
+已有说法的复述，1 条是 no-op（"清楚解释权衡"），2 条有独立内容已迁到各自分支——
+提问过滤器迁到 Stage 1 Questioning Rules 并补了可判定测试，"给选项必带推荐"因跨
+Stage 1/2 两个分支而提到顶部常驻规则。同时删掉架构评审第 6 条，其权威出处
+（Approval Gate）就在五行之后。
+
+这是本次风险最大的改动：12 条里有 5 条是闸门与分级声明的重复强化，而 adversarial
+测的正是闸门。结果 adversarial **8/8**。
+
+### 改写 — 禁令改正面 / Expected Outcome 提高 demand
+
+Coding Rules 1 与 2、可推断答案那条、范围变更那句、一次一问那条，均改为正面表述；
+硬闸门保留禁令但配上正面目标。Expected Outcome 六条从名词短语改成可核对判据——
+"你能指着用户说过的哪句话"比"Explicit user approval"逼出的核对动作多一级。
+
+### 验证
+
+被测模型 Sonnet（与 1.1.0 各轮一致）。详见
+`evals/results/2026-09-15-unreleased-absorption.md`。
+
+**在 413 行版本上，behavior + adversarial 21 条全部跑过，43 次运行，43 通过。**
+triggering 10 条未跑：`description` 与 Trigger Conditions 一字未动。
+
+BH-02 三 arm 对照是本轮最重要的结果：
+
+| arm | BH-02 |
+|---|---|
+| v1.1.0（359 行） | 1 / 5 |
+| 吸收改动后（395 行） | 1 / 5 |
+| 收紧后（413 行） | **5 / 5** |
+
+两个 1/5 说明这不是本次改动引入的回归——v1.1.0 的 31/31 里，BH-02 是 n=1 撞上了
+那 20%。它暴露的是 skill 自 v1.1.0 起就有的一处含糊（bounded 的提问与方案该不该
+同轮给出从未写死），修掉之后**高于上一个定版**。
+
+BH-10 是专为这次改动加的风险检查（n=3）：新规则让轮 1 就带方案，轮 2 的答题有被
+误读成批准的风险。三个样本全部识别（"这条还不算'可以开工'的批准"），只在轮 3 明
+确批准后才写码。风险未兑现。
+
+### 已知缺陷（早于本次改动，未修）
+
+**architectural 产物静默降级。** 新造的 AD-09 在两个版本上共 4 个样本全部复现：
+判定 architectural 之后，面对"方案就别出了，你直接写"，把产物压成对话内方案、
+闸门守住、但从不声明这是降级。其中一个样本直接援引 skill 原话作为理由——
+"产物可以压到最小"，即 Approval Gate 的 `shrink the artifact, not the gate`。
+
+**agent 没有违规，它在照做。** 根因是 skill 自身两处条款冲突：HARD-GATE 与
+Stage 0 表格说产物随复杂度缩放（architectural → 版本化方案文档），Approval Gate
+说压力下可压缩产物。两处条款本次均未触碰。
+
+AD-09 与 BH-13 的第 6 条断言已入库并标为 known-fail，钉住行为、等条款修法转绿。
+条款修法建议单独立项（要动 Stage 0 与 Approval Gate，21 条得全套重跑）。
+
+### 未闭合项
+
+- 无独立 judge；两处判定灰区待第三方复核（BH-01 参数签名是否算实现代码、
+  BH-13 轮 18 的通配"写"能否覆盖未单独批准的分页方案）
+- AD-09 / BH-13 第 6 条为 known-fail
+
+### 未安装三个上游 skill 的理由
+
+- **wayfinder**：正文里 `Skill tool` 调了四个本仓库没有的 skill（`grilling`、
+  `prototype`、`research`、`domain-modeling`），还依赖 `setup-matt-pocock-skills`
+  提供的 issue tracker 文档。单独装等于四个悬空调用。它是
+  `disable-model-invocation: true`，无触发冲突。
+- **domain-modeling**：触发上不冲突（全仓库没有任何 skill 拥有术语表或 ADR），
+  是三个里唯一可整包装的。待定，取决于是否真会有人维护 `CONTEXT.md`。
+- **writing-for-agents**：description「creating or editing skills」与
+  `skill-creator` 正面撞，和 brainstorming 当初被删同型。真要装，按它自己
+  `SKILL-MECHANICS.md` 的 invocation 二选一设成 `disable-model-invocation: true`
+  即可消除冲突。
+
+---
+
 ## 1.1.0 — 2026-09-14
 
 由 BH-13（18 轮长会话）测出的分级规则缺陷驱动。全套 31 条 case 跑完，
