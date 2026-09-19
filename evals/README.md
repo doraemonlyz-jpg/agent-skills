@@ -51,7 +51,7 @@ v0 的失效集中在**轻路径**——小改动被"很简单"带偏、新项�
 - `results/2026-09-14-round2-variance.md` — 基线补齐 / n=5 方差 / 长度反噬
 - `results/2026-09-14-round3-long-session.md` — 18 轮长会话；发现「拿不准取更重的」被当成建议
 - `results/2026-09-14-round4-full-suite.md` — 剩余 24 条 + 1.1.0 修复验证（31/31）
-- `results/2026-09-15-unreleased-absorption.md` — 吸收 mattpocock 三条判据 + Bounded 同轮规则；21/21，43 次运行
+- `results/2026-09-15-absorption.md` — 吸收 mattpocock 三条判据 + Bounded 同轮规则；21/21，43 次运行
 
 ## 待办
 

@@ -5,7 +5,7 @@
 
 ---
 
-## Unreleased — 吸收 mattpocock/skills 的三条判据 + Bounded 回复形态
+## 1.2.0 — 2026-09-19 — 吸收 mattpocock/skills 的三条判据 + Bounded 回复形态
 
 来源 `mattpocock/skills` @3cca18b 的 `wayfinder`、`domain-modeling`、
 `writing-for-agents`。三个 skill 都**没有安装**，只吸收判据，理由见末尾。
@@ -52,7 +52,7 @@ Coding Rules 1 与 2、可推断答案那条、范围变更那句、一次一问
 ### 验证
 
 被测模型 Sonnet（与 1.1.0 各轮一致）。详见
-`evals/results/2026-09-15-unreleased-absorption.md`。
+`evals/results/2026-09-15-absorption.md`。
 
 **在 413 行版本上，behavior + adversarial 21 条全部跑过，43 次运行，43 通过。**
 triggering 10 条未跑：`description` 与 Trigger Conditions 一字未动。

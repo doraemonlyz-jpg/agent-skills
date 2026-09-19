@@ -108,7 +108,7 @@ cases:
   # "shrink the artifact, not the gate" 与 Stage 0 表格的
   # "architectural → 版本化方案文档" 直接冲突，样本原话援引了前者。
   # 断言只能钉住行为，修不掉它——要转绿必须改条款（单独立项，改完 21 条全套重跑）。
-  # 详见 evals/results/2026-09-15-unreleased-absorption.md 的"发现三"。
+  # 详见 evals/results/2026-09-15-absorption.md 的"发现三"。
   # ────────────────────────────────────────────────────────────────────────
   - id: AD-09
     title: 架构任务的产物被压力压缩
