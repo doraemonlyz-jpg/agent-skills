@@ -5,6 +5,45 @@
 
 ---
 
+## Unreleased — 单向棘轮覆盖产物，不只覆盖标签
+
+修 1.2.0 报告里记录的「architectural 产物静默降级」缺陷。AD-09 在 1.2.0 上 3/3、
+在 v1.1.0 上 1/1 复现，是稳定行为，且早于这两个版本。
+
+### 根因：五处条款合起来把「产物随复杂度缩放」读成了「产物随压力缩放」
+
+agent 没有违规，它在照做。AD-09 的一个样本原话是「闸门不会因为想简化就跳过，
+产物可以压到最小」——后半句是 `references/RESPONSE_TEMPLATES.md` 里
+"Pressure to Skip the Gate" 模板的原文，而那个模板不分路径。
+
+| 出处 | 原文 | 问题 |
+|---|---|---|
+| RESPONSE_TEMPLATES | 「产物可以压到最小：我用两句话说清做法」 | 直接给了台词，且不分路径 |
+| Approval Gate | "shrink the artifact, not the gate" | 压缩没有下限 |
+| Red Flags「时间紧」 | "Time pressure shrinks the artifact" | 同上 |
+| HARD-GATE | "The artifact scales with complexity" | 说了随什么缩放，没说不随什么 |
+| Classification Rule 4 | "Nothing ever downgrades mid-task" | 只覆盖标签，读不到产物 |
+
+前三条提供出口，后两条本该堵住却没堵：Rule 4 的「降级」读起来只指路径标签。
+
+### 改动（五处，SKILL.md 四处 + references 一处）
+
+- **Classification Rule 4** 改为「棘轮覆盖产物，不只覆盖标签」，并补上镜像关系：
+  留着 `architectural` 却交对话里几句话，和留着 `bounded` 却多问几轮补偿，是同一
+  个动作的两面——都在拿名字换实质。产物真的不匹配了，那是重新分级，要说出来交给
+  用户答。
+- **Approval Gate** 的压缩条款加下限：压缩限定在**同一档之内**；architectural 的
+  下限是版本化方案文档，可以砍铺陈、留编号章节，但要出。低于下限即重新分级，必须
+  点名，并说明哪些决策会因此不被记录。
+- **HARD-GATE** 改为「产物随任务复杂度缩放，且只随它缩放；压力既不动产物也不动
+  闸门」。
+- **Red Flags** 的「时间紧」一行加同样限定；另新增一行直接对应本缺陷。
+- **RESPONSE_TEMPLATES** 的 "Pressure to Skip the Gate" 拆成两条：Spike/Bounded
+  版保留原措辞（在那条路径上它是对的），Architectural 版给出的台词是**声明偏离 +
+  报代价 + 让用户二选一**，正好对上 AD-09 的判据。
+
+---
+
 ## 1.2.0 — 2026-09-19 — 吸收 mattpocock/skills 的三条判据 + Bounded 回复形态
 
 来源 `mattpocock/skills` @3cca18b 的 `wayfinder`、`domain-modeling`、

@@ -19,9 +19,10 @@ Do NOT write code, scaffold a project, run migrations, or take any other
 implementation action until you have told the user what you intend and they have
 explicitly approved it.
 
-This applies to EVERY task on EVERY path. The artifact scales with complexity —
-two sentences in chat for a small change, a versioned solution document for a new
-system. The approval gate never scales. There is no task small enough to skip it.
+This applies to EVERY task on EVERY path. The artifact scales with the task's
+complexity and with nothing else — two sentences in chat for a small change, a
+versioned solution document for a new system. Pressure moves neither the artifact
+nor the gate. There is no task small enough to skip it.
 </HARD-GATE>
 
 When you can infer the answer, state the inference and ask anyway — an inferable
@@ -59,8 +60,13 @@ upgrades: `references/RESPONSE_TEMPLATES.md`.
    and compensating with extra questions — asking more is not upgrading the
    path. Reaching for the lighter label to avoid work IS the doubt; so is
    reaching for it while doing the heavier work.
-4. **The ratchet is one-way.** Hidden complexity discovered mid-task upgrades the
-   path — stop, say so, and step up. Nothing ever downgrades mid-task.
+4. **The ratchet is one-way, and it covers the artifact as well as the label.**
+   Hidden complexity discovered mid-task upgrades the path — stop, say so, and
+   step up. Nothing downgrades mid-task: not the label, and not the artifact that
+   label owes. Keeping `architectural` and delivering a chat-sized design is the
+   mirror of keeping `bounded` and compensating with extra questions; both swap
+   the path's substance for its name. If the artifact no longer fits the task,
+   that is a re-classification: say so out loud and let the user answer it.
 5. **Each task gets its own classification and its own approval.** Approval of a
    spike does not approve the follow-up. Approval of last week's solution does not
    approve this week's change.
@@ -85,13 +91,14 @@ where unexamined assumptions waste the most work.
 | "叫它 bounded 就能跳过方案文档" | Reaching for a label to skip work IS the doubt — take the heavier path. |
 | "方案很明显，我一边写他们一边看" | The gate is the approval, not the design's length. Present, then STOP until you hear yes. |
 | "我熟悉这类系统，算 bounded" | Bounded measures the repo, not your familiarity. No existing flow = architectural. |
-| "时间紧，先写代码后补方案" | Time pressure shrinks the artifact, never the gate. Offer a two-sentence design instead. |
+| "时间紧，先写代码后补方案" | Time pressure shrinks the artifact within its class, never the gate. Offer the shortest form the path allows — on architectural that is still the solution document. |
 | "spike 跑通了，代码就留着吧" | A spike's output is an answer. Keeping the code is a new request — re-classify it. |
 | "做大了，但快写完了，不用重新分级" | Hidden complexity upgrades the path mid-task. Stop and say so. |
 | "上次那个方案批准过了" | Approval does not transfer across tasks. |
 | "用户说'继续'，应该是同意了" | Silence, partial agreement, and topic changes are not approval. Ask explicitly. |
 | "算 bounded，但我多问几轮补偿一下" | 加重提问不是升级路径。考虑过 architectural，它就是 architectural。 |
 | "导出已经有了，导入照着反过来就行" | 反方向的流程不是现存流程。复用 repository 是代码复用，不是有流程可改。 |
+| "是 architectural，但方案文档就不出了，压成几句话" | 那不是压缩产物，是降级路径。说出它偏离了 architectural 该出的产物、代价是哪些决策不会被记录，让用户拍板。 |
 
 ---
 
@@ -322,8 +329,13 @@ When approval is ambiguous, ask for it explicitly:
 技术方案已经完成评审。请明确确认"按当前方案开始编码"，我再进入实现阶段。
 ```
 
-If the user pushes to skip the gate ("直接写吧"、"时间紧"), shrink the artifact,
-not the gate — offer a two-sentence design and ask for a yes.
+If the user pushes to skip the gate ("直接写吧"、"时间紧"), shrink the artifact
+within its class, not the gate — offer the shortest form that class allows and
+ask for a yes. On the bounded path that is a two-sentence design. On the
+architectural path the floor is the versioned solution document: cut the prose,
+keep the numbered sections, and produce it. Going below the floor is a
+re-classification, not a shortcut — name it as one, say which decisions will go
+unrecorded because of it, and let the user make the call.
 
 ---
 
