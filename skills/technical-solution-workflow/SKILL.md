@@ -2,7 +2,7 @@
 name: technical-solution-workflow
 description: Guide users from ambiguous product or engineering requirements to an agreed technical solution, and only begin implementation after explicit approval. Classifies every request as spike, bounded, or architectural so ceremony scales with the task while the approval gate never does. Use when a user asks to design, build, refactor, or extend a system, service, agent, platform, application, architecture, or feature whose requirements or design are not yet settled.
 metadata:
-  version: 1.2.0
+  version: 1.3.0
   short-description: Classify the task, clarify requirements, agree the solution, then code
 ---
 
