@@ -15,6 +15,10 @@
 - [ ] Deployment matches actual infrastructure
 - [ ] Backup and recovery are covered
 - [ ] Testing and acceptance criteria exist
+- [ ] The proof level is no stronger than confirmed requirements require
+- [ ] Review findings were admitted as core corrections, prerequisites, mitigations, accepted risks, future work, or approved scope expansions
+- [ ] No missing external capability was silently turned into a subsystem owned by this project
+- [ ] Any new state store, protocol, control plane, or cross-instance mechanism has an approved complexity delta
 - [ ] Future optimizations are separated from MVP
 - [ ] Coding approval gate is stated
 
@@ -25,6 +29,7 @@
 - [ ] No material requirement remains open
 - [ ] For Architectural: an implementation plan exists
 - [ ] Required external interfaces have been validated or mocked
+- [ ] Every scope expansion introduced during review was explicitly approved
 - [ ] Repository and deployment constraints are understood
 
 ## Before Presenting a Short Design (Bounded path)

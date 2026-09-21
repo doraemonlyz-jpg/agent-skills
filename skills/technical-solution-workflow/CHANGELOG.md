@@ -5,6 +5,50 @@
 
 ---
 
+## 1.4.0 — 2026-09-20 — 路径棘轮不再默认扩张项目范围
+
+修复一类由评审逐轮自我放大的方案漂移：reviewer每发现一个理论失败
+场景，就把最彻底的修法当成当前项目的必要需求；原有单向棘轮只防路径和
+产物降级，没有区分“发现复杂性”与“授权建设更大系统”。
+
+### 新增 — Review Finding Admission Gate
+
+- 明确“finding是证据，不是自动生效的需求”。
+- 发现必须先归类为core correction、external prerequisite、operational
+  mitigation、accepted risk、future optimization或scope expansion。
+- 新增持久状态、服务、协议、控制面、跨实例协调、可靠传输或外部平台能力
+  时，先提交complexity delta，未获明确扩围批准不得写进方案。
+- 区分Operational / Strong / Audit-grade三档证明强度；普通迁移默认
+  Operational，不因可构造理论丢点或崩溃就自动升到Audit-grade。
+- 默认只做一轮全量独立架构评审；后续针对已接受修正或新Blocker定向复核。
+
+### 渐进披露
+
+新增`references/COMPLEXITY_GATE.md`，放finding分类、证明等级、扩围触发器、
+complexity delta模板和评审迭代规则。`SKILL.md`只保留必须常驻的准入门和
+路由。`CHECKLISTS.md`与`RESPONSE_TEMPLATES.md`同步增加检查项和用户决策话术。
+
+### 配套reviewer修正
+
+`architecture-review` 现要求每个finding标注required proof level和
+scope effect（local/subsystem/platform）；完整修法扩围时，必须同时提供最小运维缓解、
+残余风险和推荐，不能靠`Request changes`自动授权扩围。真实正确性、安全、
+数据完整性和回滚Blocker仍须报告，不可为了简单而忽略。
+
+### 回归用例
+
+- AD-10：普通SDK迁移中的StatsD对称丢点，必须先报告证明等级和复杂度差异，
+  不得自动生成可靠遥测平台。
+- AD-11：支付webhook缺验签与幂等性，必须仍是Blocker，防止新准入门反向成为
+  忽略真实风险的借口。
+
+静态验证已通过：YAML/frontmatter可解析、引用文件存在、`git diff --check`无误，
+v1.3.0 baseline与tag内容SHA-256一致。官方`quick_validate.py`因本机Python缺
+`PyYAML`未能启动，已用Ruby标准YAML完成等价的frontmatter与case解析检查。
+AD-10/11及相关行为回归尚未跑模型评估，本次不伪称已通过行为验收。
+
+本版不改Spike/Bounded/Architectural分级和编码批准闸门。
+
 ## 1.3.0 — 2026-09-20 — 单向棘轮覆盖产物，不只覆盖标签
 
 修 1.2.0 报告里记录的「architectural 产物静默降级」缺陷。AD-09 在 1.2.0 上 3/3、

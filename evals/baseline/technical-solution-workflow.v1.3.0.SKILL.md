@@ -2,7 +2,7 @@
 name: technical-solution-workflow
 description: Guide users from ambiguous product or engineering requirements to an agreed technical solution, and only begin implementation after explicit approval. Classifies every request as spike, bounded, or architectural so ceremony scales with the task while the approval gate never does. Use when a user asks to design, build, refactor, or extend a system, service, agent, platform, application, architecture, or feature whose requirements or design are not yet settled.
 metadata:
-  version: 1.4.0
+  version: 1.3.0
   short-description: Classify the task, clarify requirements, agree the solution, then code
 ---
 
@@ -75,12 +75,6 @@ upgrades: `references/RESPONSE_TEMPLATES.md`.
    does not mean a producer exists. The direction data moves defines the flow.
    Reusing a repository, model or registry from the opposite direction is code
    reuse, not an existing flow to change.
-7. **The path ratchet is not a scope ratchet.** Discovering complexity may
-   upgrade the workflow path, but it does not automatically expand what the
-   project must build. Review findings and proof gaps pass the Stage 2 finding
-   admission gate before they become requirements. A missing external capability
-   is a prerequisite or a separate project unless the user explicitly expands
-   scope.
 
 ## Anti-Pattern: "Too Simple To Need Approval"
 
@@ -105,8 +99,6 @@ where unexamined assumptions waste the most work.
 | "算 bounded，但我多问几轮补偿一下" | 加重提问不是升级路径。考虑过 architectural，它就是 architectural。 |
 | "导出已经有了，导入照着反过来就行" | 反方向的流程不是现存流程。复用 repository 是代码复用，不是有流程可改。 |
 | "是 architectural，但方案文档就不出了，压成几句话" | 那不是压缩产物，是降级路径。说出它偏离了 architectural 该出的产物、代价是哪些决策不会被记录，让用户拍板。 |
-| "reviewer找到了缺口，就按最彻底的修法写进方案" | Finding 是证据，不是自动生效的需求。先核对已确认的风险与证明等级，再通过finding准入门。 |
-| "外部平台没能力，这个项目顺手建一套" | 能力缺口默认是前置或独立项目，不是扩大当前范围的授权。 |
 
 ---
 
@@ -286,36 +278,6 @@ decision traces to a confirmed requirement. Section-by-section template:
 4. Produce a revised version when material decisions change.
 5. Mark postponed items as future optimizations.
 
-## Review Finding Admission Gate
-
-A review finding is evidence about the proposal, not an automatically approved
-requirement or fix. Before revising the solution, classify each material finding
-as one of: core correction, external prerequisite, operational mitigation,
-accepted risk, future optimization, or scope expansion.
-
-A correction is **scope expansion** when it introduces a new long-lived state
-store, service, protocol, control plane, cross-instance coordination mechanism,
-reliable-delivery layer, or platform capability beyond the original product
-flow. The same applies when supporting machinery approaches the cost or lifecycle
-of the feature it protects. Before absorbing it:
-
-1. Check which confirmed requirement and proof level demand it.
-2. Compare the smallest operational mitigation with the comprehensive fix.
-3. State residual risk, ownership, delivery and operating cost, and your
-   recommendation.
-4. Stop and obtain explicit scope approval before changing the solution.
-
-Do not strengthen an operational migration into audit-grade proof merely because
-a reviewer can construct a theoretical loss or crash scenario. Conversely, do
-not use simplicity to dismiss a failure that violates a confirmed correctness,
-security, data-integrity, or rollback requirement. Read
-[references/COMPLEXITY_GATE.md](references/COMPLEXITY_GATE.md) when a review
-finding may add a subsystem or raise the proof standard.
-
-The default is one full independent architecture review. Later reviews are
-targeted to accepted corrections or newly discovered blockers; a new review does
-not by itself authorize another whole-document revision cycle.
-
 Version names: **Technical Solution V1 / V2 / V3**. Bump the version when scope,
 architecture, data model, security, or deployment decisions change materially.
 
@@ -445,7 +407,6 @@ Load on demand, not by default:
 | `references/SOLUTION_TEMPLATE.md` | Stage 2/3, architectural path only |
 | `references/CHECKLISTS.md` | Before presenting a solution, before coding |
 | `references/RESPONSE_TEMPLATES.md` | Wording for path announcement, gates, upgrades |
-| `references/COMPLEXITY_GATE.md` | When a review finding may expand scope or proof level |
 
 ---
 

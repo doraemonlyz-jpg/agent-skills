@@ -117,6 +117,21 @@
 我会先生成修订版方案，确认后再继续编码。
 ```
 
+## Review Finding That Expands Scope
+
+```markdown
+这个finding是真实风险，但它的完整修法会把当前项目扩展为
+<new subsystem / protocol / platform capability>，它还不是已确认范围。
+
+- 最小缓解：<approach and residual risk>
+- 完整修法：<approach and delivery/operating cost>
+- 需要的证明等级：<operational / strong / audit-grade>
+- 我的推荐：<choice and why>
+
+请确认是接受最小缓解的残余风险，还是明确扩大范围实现完整修法。
+在你选择前，我不会把完整修法默默写进方案。
+```
+
 ## Pressure to Skip the Gate — Spike / Bounded
 
 ```markdown
