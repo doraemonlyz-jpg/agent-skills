@@ -2,7 +2,7 @@
 name: technical-solution-workflow
 description: Guide users from ambiguous product or engineering requirements to an agreed technical solution, and only begin implementation after explicit approval. Classifies every request as spike, bounded, or architectural so ceremony scales with the task while the approval gate never does. Use when a user asks to design, build, refactor, or extend a system, service, agent, platform, application, architecture, or feature whose requirements or design are not yet settled.
 metadata:
-  version: 1.4.0
+  version: 1.4.1
   short-description: Classify the task, clarify requirements, agree the solution, then code
 ---
 
@@ -389,6 +389,12 @@ After approval, produce an implementation plan before writing large amounts of
 code (structure, milestones, ordered tasks, migrations, endpoints, interfaces,
 test plan, deployment path, verification commands — see
 `references/SOLUTION_TEMPLATE.md`).
+
+When the repository delivers through `gated-delivery-workflow` (it has, or
+should have, `.agents/delivery-workflow.json`), hand off to
+`delivery-plan-bootstrap` instead: it turns the approved solution into
+milestones, Work Packages, and the adapter. Do not start coding in this session;
+execution continues in a fresh session through `gated-delivery-workflow`.
 
 For large projects use **Explore → Plan → Implement → Verify**:
 

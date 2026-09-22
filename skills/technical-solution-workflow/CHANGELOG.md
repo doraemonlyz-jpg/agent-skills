@@ -5,6 +5,14 @@
 
 ---
 
+## 1.4.1 — 2026-09-22 — 架构路径可交接给 delivery-plan-bootstrap
+
+- Stage 3 架构路径：仓库使用 `gated-delivery-workflow` 时，方案批准后交给
+  `delivery-plan-bootstrap` 生成里程碑、工作包和 `.agents/delivery-workflow.json`，
+  本会话不直接编码。
+
+---
+
 ## 1.4.0 — 2026-09-20 — 路径棘轮不再默认扩张项目范围
 
 修复一类由评审逐轮自我放大的方案漂移：reviewer每发现一个理论失败
