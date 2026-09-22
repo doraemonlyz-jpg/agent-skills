@@ -1,0 +1,4 @@
+interface:
+  display_name: "Delivery Plan Bootstrap"
+  short_description: "Turn an approved solution into milestones, work packages, and the delivery adapter"
+  default_prompt: "Use $delivery-plan-bootstrap to turn the approved technical solution in this repository into a gated delivery plan."

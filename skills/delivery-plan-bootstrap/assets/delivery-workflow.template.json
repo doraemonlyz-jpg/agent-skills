@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "project": "<Project>",
+  "baseline": {
+    "name": "Technical Solution V1",
+    "status": "approved",
+    "required_documents": ["AGENTS.md", "docs/solution.md", "docs/tasks/README.md"],
+    "required_markers": {
+      "docs/solution.md": ["Status: Approved — Technical Solution V1"]
+    }
+  },
+  "delivery": {
+    "current_phase": "phase0",
+    "authorized_milestones": [],
+    "task_id_pattern": "^M[0-9]+-[0-9]+$",
+    "milestone_files": {
+      "M0": "docs/tasks/M0.md",
+      "M1": "docs/tasks/M1.md"
+    },
+    "checkpoint_rules": ["M1 requires explicit approval before start — <reason>"]
+  },
+  "preflight": {
+    "commands": []
+  },
+  "verification": {
+    "commands": ["<existing or M0-created test command>"],
+    "handoff_template": ".agents/templates/handoff.md"
+  },
+  "hard_rules": ["<rule> (source: docs/solution.md §x)"],
+  "architecture_change_triggers": ["<boundary> (source: docs/solution.md §x)"]
+}
