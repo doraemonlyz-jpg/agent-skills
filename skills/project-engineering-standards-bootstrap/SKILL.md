@@ -205,6 +205,8 @@ Add or reference:
 
 - `technical-solution-workflow`
 - `coding-standards`
+- `delivery-plan-bootstrap` and `gated-delivery-workflow` when the project
+  will be delivered milestone by milestone through coding Agents
 
 Avoid duplicating full project specs inside Skill files. Skills enforce behavior; project documents define detailed rules.
 
