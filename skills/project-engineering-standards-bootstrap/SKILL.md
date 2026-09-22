@@ -188,6 +188,9 @@ Do not include real secrets, account numbers, or production identifiers.
 Include:
 
 - Test layers
+- Test-first policy: a failing test before the fix for every bug, and before
+  the implementation for deterministic critical logic; name the exceptions
+  (UI, throwaway spikes, external integrations learned by calling them)
 - Required tests for critical logic
 - Integration and contract testing
 - Security and negative testing

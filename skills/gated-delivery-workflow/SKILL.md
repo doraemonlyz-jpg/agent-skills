@@ -59,7 +59,7 @@ Publish a focused plan containing:
 - Gate and dependency evidence.
 - Exact files or modules expected to change.
 - Interface, schema, migration, compatibility, rollout, and rollback effects.
-- Required test layers.
+- Required test layers, and which acceptance criteria are written test-first.
 - Explicit non-goals.
 
 Inspect the working tree, relevant implementation, tests, and user changes before editing. At most one plan step may be in progress.
@@ -71,7 +71,11 @@ Inspect the working tree, relevant implementation, tests, and user changes befor
 3. Preserve existing user changes and avoid unrelated refactoring.
 4. Follow repository coding, security, testing, and architecture standards.
 5. Keep external systems behind approved boundaries.
-6. Add or update tests with the implementation.
+6. Write tests first for bug fixes and deterministic logic: turn the acceptance
+   criterion into a test, run it, and see it fail for the expected reason before
+   implementing. Other changes add or update tests with the implementation.
+   Scope and rules: the Test-First Rule in `coding-standards`. Never weaken,
+   skip, or delete a failing test to reach green.
 7. Document intentional compatibility or migration behavior.
 8. Do not weaken gates to preserve a target date.
 
@@ -91,6 +95,9 @@ Classify evidence as appropriate:
 - Golden or snapshot.
 - Performance or reliability.
 - Manual external evidence.
+
+Record test-first evidence: the failing run before the implementation and the
+passing run after. A test that never failed is not test-first evidence.
 
 Read `references/verification-evidence.md` for selection and reporting rules.
 
@@ -115,7 +122,7 @@ Mark a Work Package DONE only when:
 
 - Task-specific acceptance criteria pass.
 - Adapter and repository checks pass.
-- Required evidence is recorded.
+- Required evidence is recorded, including test-first evidence for bug fixes and deterministic logic.
 - Security and architecture reviews find no unreported drift.
 - Known limitations and skipped checks are explicit.
 

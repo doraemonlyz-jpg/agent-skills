@@ -27,6 +27,21 @@ For each command or check, report one of:
 
 Include the literal command, exit status, and meaningful output. Do not summarize unrun checks as verified.
 
+## Test-first evidence
+
+Bug fixes and deterministic logic are written test-first (see the Test-First
+Rule in `coding-standards`). For each such test, record:
+
+- The test name.
+- The failing run before the implementation: the command and the one-line
+  failure. For a bug fix, the failure must come from the bug, not from a
+  compile error, a missing import, or setup.
+- The passing run after.
+
+If an in-scope change was not done test-first, say why. Never present a test
+that was written after the implementation, or that never failed, as
+test-first.
+
 ## Manual evidence
 
 Record time, environment, version, sanitized evidence location, result, and reviewer. Never store secrets or personal data in evidence artifacts.

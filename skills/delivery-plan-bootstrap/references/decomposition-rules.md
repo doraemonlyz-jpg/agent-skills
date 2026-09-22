@@ -115,6 +115,9 @@ Copy each checkpoint into `delivery.checkpoint_rules`.
   behavior, not the property: "sending the same event twice creates one reply",
   not "ensure idempotency". An internal rule that must hold is stated as a
   checkable rule.
+- For bug fixes and deterministic logic, write each criterion so it can become
+  an automated test before the implementation exists: concrete inputs and the
+  expected result. `gated-delivery-workflow` runs these test-first.
 - **How to check**: exact commands, plus `manual:` steps when automation
   cannot cover the behavior. External systems need real evidence, never a mock
   in place of it.

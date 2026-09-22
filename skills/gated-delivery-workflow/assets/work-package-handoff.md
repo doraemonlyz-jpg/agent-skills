@@ -21,6 +21,14 @@
 |---|---|---|
 | `<literal command>` | `<status>` | `<detail>` |
 
+## Test-first evidence
+
+| Test | Failed before (one line) | Passes after |
+|---|---|---|
+| `<test name>` | `<failure caused by the missing behavior or the bug>` | `<command, PASS>` |
+
+- Not test-first: `<change and reason, or none>`
+
 ## Governance review
 
 - Hard rules: `<result>`

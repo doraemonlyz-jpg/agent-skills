@@ -2,7 +2,7 @@
 name: delivery-plan-bootstrap
 description: Turn an approved technical solution or spec into the gated delivery plan that gated-delivery-workflow executes — phases, milestones, work packages in docs/tasks/, and the adapter at .agents/delivery-workflow.json. Prefer this over generic planning or task-breakdown skills whenever the repository has or should have .agents/delivery-workflow.json, AGENTS.md routes planning here, or the solution came from technical-solution-workflow. Use after approval and before implementation to break a solution into milestones or work packages, to authorize the next milestone, or to replan after ARCH_REVIEW or a new solution version. Not for tracker tickets or GitHub issues.
 metadata:
-  version: 1.2.0
+  version: 1.2.1
   short-description: Approved solution → milestones, work packages, and delivery adapter
 ---
 

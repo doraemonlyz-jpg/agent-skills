@@ -2,7 +2,7 @@
 name: technical-solution-workflow
 description: Guide users from ambiguous product or engineering requirements to an agreed technical solution, and only begin implementation after explicit approval. Classifies every request as spike, bounded, or architectural so ceremony scales with the task while the approval gate never does. Use when a user asks to design, build, refactor, or extend a system, service, agent, platform, application, architecture, or feature whose requirements or design are not yet settled.
 metadata:
-  version: 1.4.1
+  version: 1.4.2
   short-description: Classify the task, clarify requirements, agree the solution, then code
 ---
 
@@ -420,7 +420,9 @@ For large projects use **Explore → Plan → Implement → Verify**:
 7. Keep prompts versioned.
 8. Store workflow and model versions with generated outputs.
 9. Add idempotency to scheduled and retried operations.
-10. Add tests with each implementation phase.
+10. Add tests with each implementation phase. Bug fixes and deterministic logic
+    are written test-first: see the failing test before the code (Test-First
+    Rule in `coding-standards`).
 11. Document any deviation from the approved solution.
 12. If implementation reveals a flawed architecture assumption, pause coding and
     return to architecture review.

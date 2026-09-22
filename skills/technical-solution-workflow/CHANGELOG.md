@@ -5,6 +5,11 @@
 
 ---
 
+## 1.4.2 — 2026-09-22 — 编码规则加入测试先行
+
+- Stage 3 编码规则第 10 条：修 bug 和确定性逻辑先写失败的测试，再写实现，
+  细则见 `coding-standards` 的 Test-First Rule。其他改动仍随实现补测试。
+
 ## 1.4.1 — 2026-09-22 — 架构路径可交接给 delivery-plan-bootstrap
 
 - Stage 3 架构路径：仓库使用 `gated-delivery-workflow` 时，方案批准后交给
