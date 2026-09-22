@@ -21,6 +21,15 @@ graph LR
   M0-1 --> M0-2
 ```
 
+## Blocking Decisions
+
+Recorded here, never inside a Work Package. A package that depends on an open
+decision (`DECISION: <ID>`) stays BLOCKED, and its milestone cannot be
+authorized. Resolve through `technical-solution-workflow`, then Replan.
+
+| ID | Decision | Open question | Affected packages | Status | Resolved in |
+|---|---|---|---|---|---|
+
 ## External Prerequisites
 
 | ID | Needed by | Owner | Status |

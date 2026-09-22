@@ -4,6 +4,24 @@
 
 ---
 
+## 1.2.0 — 2026-09-22 — 有阻塞决策也把计划写进文件
+
+此前有阻塞决策时停在计划确认、什么都不落盘，草案只存在于对话里，会话一压缩就丢。
+
+- 阻塞决策记在计划索引的「Blocking Decisions」表里（`D1`、`D2`…，状态 OPEN /
+  RESOLVED），受影响的工作包写 `DECISION: <id>` 依赖并保持 BLOCKED。
+- 受影响范围按「每种可能答案过一遍」判断，不只看表面相关的工作包。
+- 被决策卡住的工作包可以只写已定的部分（Status、Depends on、Goal、Why、Scope、
+  Solution refs），其余等决策定了再补。
+- 含待定决策的里程碑不能授权；Gate C 提示先写的代码会替决策做主，拿不准就等。
+- Replan 新增「Decision resolution」：新方案批准后标记 RESOLVED、去掉依赖、补全
+  工作包、对照检查已完成的工作包。
+- 为决策收集信息的调查归 `technical-solution-workflow`，不作为工作包。
+- `check_delivery_plan.py`：解析决策表；未知决策、依赖已解决的决策、非 BLOCKED 状态、
+  已授权的里程碑判失败；未被引用的 OPEN 决策、索引漏列受影响工作包给警告；输出
+  `open_decisions`、`milestones_blocked_by_decisions`。
+- 新增 `scripts/test_check_delivery_plan.py`（13 个用例）。
+
 ## 1.1.1 — 2026-09-22 — 旧格式计划的升级路径
 
 - Replan 新增「Format upgrade」：方案没变、只是计划用旧格式写的（比如缺 `Why`、

@@ -21,6 +21,9 @@ STATUSES = {"BLOCKED", "READY", "IN_PROGRESS", "VERIFYING", "DONE", "FAILED", "A
 REQUIRED = ["Status", "Depends on", "Goal", "Why", "Acceptance criteria", "How to check", "Required tests",
             "Scope", "Solution refs", "Non-goals"]
 NON_EMPTY = ["Goal", "Why", "How to check", "Required tests", "Scope", "Solution refs", "Non-goals"]
+# A package blocked by an open decision may leave out what hinges on the answer.
+BLOCKED_REQUIRED = ["Status", "Depends on", "Goal", "Why", "Scope", "Solution refs"]
+DECISION_STATUSES = {"OPEN", "RESOLVED"}
 HEADER_FIELDS = ["Milestone", "Phase", "Goal", "Exit criteria"]
 HEADING = re.compile(r"^##\s+(\S+)\s+[—–-]+\s+(.+?)\s*$")
 FIELD = re.compile(r"^-\s+([A-Za-z][A-Za-z -]*?):\s*(.*)$")
@@ -88,15 +91,57 @@ def size_in_words(text: str) -> int:
     return latin + cjk // 2
 
 
-def split_deps(value: str) -> tuple[list[str], list[str]]:
+def split_deps(value: str) -> tuple[list[str], list[str], list[str]]:
+    """Split a Depends on value into package IDs, EXT items, and decision IDs."""
     if value.strip().lower() in {"none", ""}:
-        return [], []
-    ids, external = [], []
+        return [], [], []
+    ids, external, decisions = [], [], []
     for part in (p.strip() for p in value.split(",")):
         if not part:
             continue
-        (external if part.upper().startswith("EXT:") else ids).append(part)
-    return ids, external
+        upper = part.upper()
+        if upper.startswith("EXT:"):
+            external.append(part)
+        elif upper.startswith("DECISION:"):
+            decisions.append(part.split(":", 1)[1].strip())
+        else:
+            ids.append(part)
+    return ids, external, decisions
+
+
+def parse_decisions(index_text: str) -> tuple[dict[str, dict[str, str]], list[str]]:
+    """Read the Blocking Decisions table from the plan index."""
+    decisions: dict[str, dict[str, str]] = {}
+    problems: list[str] = []
+    lines = index_text.splitlines()
+    try:
+        start = next(i for i, line in enumerate(lines) if line.strip().lower().startswith("## blocking decisions"))
+    except StopIteration:
+        return decisions, problems
+    header: list[str] | None = None
+    for line in lines[start + 1:]:
+        if line.startswith("## "):
+            break
+        if not line.strip().startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if header is None:
+            header = [c.lower() for c in cells]
+            continue
+        if all(set(c) <= set("-: ") for c in cells):
+            continue
+        row = dict(zip(header, cells))
+        did = row.get("id", "").strip("`")
+        if not did:
+            continue
+        status = (row.get("status", "").split() or [""])[0].upper()
+        if status not in DECISION_STATUSES:
+            problems.append(f"decision {did}: invalid Status {row.get('status', '')!r} (use OPEN or RESOLVED)")
+        if did in decisions:
+            problems.append(f"decision {did}: duplicate ID in Blocking Decisions")
+        row["status"] = status
+        decisions[did] = row
+    return decisions, problems
 
 
 def find_cycle(graph: dict[str, list[str]]) -> list[str] | None:
@@ -165,6 +210,10 @@ def main() -> int:
     index_path = root / "docs/tasks/README.md"
     owned = index_path.is_file() and "delivery-plan-bootstrap" in index_path.read_text(encoding="utf-8", errors="replace")
     checked_files = milestone_files if (owned or args.strict) else {}
+    decisions: dict[str, dict[str, str]] = {}
+    if checked_files and index_path.is_file():
+        decisions, decision_problems = parse_decisions(index_path.read_text(encoding="utf-8", errors="replace"))
+        failures.extend(decision_problems)
     if not checked_files and milestone_files:
         warnings.append("plan not created by delivery-plan-bootstrap (docs/tasks/README.md missing or does not name it); "
                         "milestone format checks skipped, adapter check only; use --strict to force")
@@ -213,14 +262,18 @@ def main() -> int:
                 failures.append(f"{loc}: invalid Status {status_word!r}")
             if status_word == "DROPPED":
                 continue  # a dropped record keeps its history; only Status is required
-            for key in REQUIRED:
+            _, _, decision_deps = split_deps(fields.get("Depends on", ""))
+            open_deps = [d for d in decision_deps if decisions.get(d, {}).get("status") == "OPEN"]
+            wp["open_decisions"] = open_deps
+            required = BLOCKED_REQUIRED if open_deps else REQUIRED
+            for key in required:
                 if key not in fields and key != "Status":
                     failures.append(f"{loc}: missing field {key}")
             for key in NON_EMPTY:
                 if key in fields and not has_value(wp, key):
                     failures.append(f"{loc}: empty {key}")
             criteria = wp["items"].get("Acceptance criteria", [])
-            if not criteria:
+            if not criteria and not open_deps:
                 failures.append(f"{loc}: Acceptance criteria needs at least one '  - ' item")
             elif len(criteria) > MAX_CRITERIA:
                 warnings.append(f"{loc}: {len(criteria)} acceptance criteria; more than {MAX_CRITERIA} usually means two packages")
@@ -256,9 +309,23 @@ def main() -> int:
     for wid, wp in packages.items():
         if wp.get("status") == "DROPPED":
             continue
-        ids, external = split_deps(wp["fields"].get("Depends on", ""))
+        ids, external, decision_deps = split_deps(wp["fields"].get("Depends on", ""))
         wp["external"] = external
         graph[wid] = ids
+        for did in decision_deps:
+            decision = decisions.get(did)
+            if decision is None:
+                failures.append(f"{wid}: depends on DECISION {did}, which is not in the Blocking Decisions table")
+            elif decision["status"] == "RESOLVED":
+                failures.append(f"{wid}: still depends on RESOLVED decision {did}; update the package in Replan")
+            elif decision["status"] == "OPEN":
+                if wp.get("status") != "BLOCKED":
+                    failures.append(f"{wid}: status {wp.get('status')} while decision {did} is OPEN; it must stay BLOCKED")
+                if wp["milestone"] in authorized:
+                    failures.append(f"{wid}: milestone {wp['milestone']} is authorized while decision {did} is OPEN")
+                listed = decision.get("affected packages", "")
+                if wid not in listed:
+                    warnings.append(f"decision {did}: affected packages does not list {wid}")
         for dep in ids:
             target = packages.get(dep)
             if target is None:
@@ -273,6 +340,13 @@ def main() -> int:
     cycle = find_cycle(graph)
     if cycle:
         failures.append("dependency cycle: " + " -> ".join(cycle))
+    referenced = {d for wp in packages.values() for d in wp.get("open_decisions", [])}
+    for did, decision in decisions.items():
+        if decision["status"] == "OPEN" and did not in referenced:
+            warnings.append(f"decision {did} is OPEN but no package depends on it")
+    open_decisions = sorted(d for d, v in decisions.items() if v["status"] == "OPEN")
+    blocked_milestones = sorted({wp["milestone"] for wp in packages.values() if wp.get("open_decisions")},
+                                key=lambda m: order.get(m, 0))
 
     for index, milestone in enumerate(milestone_files):
         if milestone in authorized:
@@ -313,6 +387,8 @@ def main() -> int:
         "work_packages": len(packages),
         "by_status": counts,
         "external_prerequisites": sorted({e for wp in packages.values() for e in wp.get("external", [])}),
+        "open_decisions": open_decisions,
+        "milestones_blocked_by_decisions": blocked_milestones,
         "adapter_check": None if adapter is None else adapter.get("status"),
         "failures": failures,
         "warnings": warnings,

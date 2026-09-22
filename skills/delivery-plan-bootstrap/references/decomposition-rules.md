@@ -10,13 +10,28 @@ Before writing a package, check whether its implementer would have to choose
 anything that changes behavior, interfaces, data, security, scale,
 performance, compatibility, operations, cost, or proof.
 
-- If yes, it is a **blocking decision**. List it in the Gate B draft and return
-  to `technical-solution-workflow`. Never hide it inside a package as "decide
+- If yes, it is a **blocking decision**. Record it in the plan index's
+  Blocking Decisions table with an ID (`D1`, `D2`, …), the precise open
+  question, and the affected packages, and route it to
+  `technical-solution-workflow`. Never hide it inside a package as "decide
   during implementation", TBD, or 待定.
+- **Finding the affected packages.** For each open decision, walk through its
+  plausible answers. A package is affected if any answer would change its Goal,
+  acceptance criteria, contract, or scope, even when it does not obviously
+  mention the topic. Affected packages depend on `DECISION: <id>` and stay
+  `BLOCKED`.
+- Write an affected package with what is already decided. Leave out the fields
+  that hinge on the answer; the checker accepts that only while the decision is
+  open.
 - Decisions the approved solution already fixed go into the package's Agent
   notes, with the pinned source.
 - Interchangeable local mechanics (helper names, file layout inside the agreed
   boundary) are left to the implementer.
+- Investigation that informs a decision (reading code, reproducing a bug, a
+  throwaway spike) belongs to `technical-solution-workflow`, not to a Work
+  Package. Its output is facts, not code to keep.
+- Do not start work a pending decision could overturn. Code written first tends
+  to decide the question by default.
 
 ## Split by working result
 

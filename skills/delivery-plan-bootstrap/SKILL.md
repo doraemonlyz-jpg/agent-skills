@@ -2,7 +2,7 @@
 name: delivery-plan-bootstrap
 description: Turn an approved technical solution or spec into the gated delivery plan that gated-delivery-workflow executes — phases, milestones, work packages in docs/tasks/, and the adapter at .agents/delivery-workflow.json. Prefer this over generic planning or task-breakdown skills whenever the repository has or should have .agents/delivery-workflow.json, AGENTS.md routes planning here, or the solution came from technical-solution-workflow. Use after approval and before implementation to break a solution into milestones or work packages, to authorize the next milestone, or to replan after ARCH_REVIEW or a new solution version. Not for tracker tickets or GitHub issues.
 metadata:
-  version: 1.1.1
+  version: 1.2.0
   short-description: Approved solution → milestones, work packages, and delivery adapter
 ---
 
@@ -25,8 +25,10 @@ gives. It never implements code and never authorizes on the user's behalf.
    approved solution. Anything else is a new request.
 4. No open decisions inside Work Packages. A choice that would change behavior,
    interfaces, data, security, scale, performance, compatibility, operations,
-   cost, or proof is a blocking decision: list it and return to
-   `technical-solution-workflow`. Never leave it for the implementer.
+   cost, or proof is a blocking decision. Record it in the plan index, make
+   every affected package depend on it (`DECISION: <id>`), and route it to
+   `technical-solution-workflow`. Never leave it for the implementer, and never
+   authorize a milestone that still depends on it.
 </HARD-GATE>
 
 ## Where This Fits
@@ -56,7 +58,7 @@ Pick one and say it out loud in the first reply.
 |---|---|---|
 | **Bootstrap** | No adapter or no milestone files yet | Full plan + adapter + AGENTS.md link |
 | **Authorize** | User wants to open the next milestone or phase | Updated `authorized_milestones`, `current_phase`, authorization log |
-| **Replan** | New solution version, `ARCH_REVIEW` outcome, approved scope change, or a plan written in an older format of this skill | Revised milestone files and adapter; completed work preserved |
+| **Replan** | New solution version (including one that resolves blocking decisions), `ARCH_REVIEW` outcome, approved scope change, or a plan written in an older format of this skill | Revised milestone files and adapter; completed work preserved |
 
 ## Existing Delivery Conventions
 
@@ -133,8 +135,13 @@ Read `references/decomposition-rules.md` and apply it. Produce:
   scope boundary, pinned solution references, agent notes, and non-goals.
   Fields and writing rules: `references/milestone-file-format.md`.
 - **Blocking decisions** — anything a package's implementer would have to
-  decide (HARD-GATE 4). If the list is not empty, stop after Gate B and route
-  to `technical-solution-workflow`.
+  decide (HARD-GATE 4). Give each an ID (`D1`, `D2`, …, never reused), the
+  precise open question, and the affected packages. A package is affected when
+  any plausible answer would change its Goal, acceptance criteria, contract, or
+  scope, not only when it obviously mentions the topic. Affected packages are
+  written with what is already decided and depend on `DECISION: <id>`. Open
+  decisions do not stop the plan from being written; they stop the affected
+  milestones from being authorized.
 - **Hard rules** and **architecture change triggers** — each quoted or derived
   from a cited section of the solution, `AGENTS.md`, or `docs/SECURITY.md`.
   Never invent policy.
@@ -166,7 +173,8 @@ Phase / 里程碑：
 硬性规则（来源）：只读访问券商 API（方案 §5.2）…
 架构变更触发条件：服务边界、数据归属、信任边界 …
 未覆盖的方案条目：无 / §9 未来优化（按方案排除）
-阻塞决策：无 / M2-1 的重试上限未定 → 需回到方案补充
+阻塞决策：无 / D1 重试上限未定（影响 M2-1、M2-3）→ 交给 technical-solution-workflow
+（计划照样写入；受影响的工作包保持阻塞，含待定决策的里程碑暂不能授权）
 
 确认后我写入 docs/tasks/ 和 .agents/delivery-workflow.json。
 ```
@@ -227,14 +235,23 @@ Ask separately and explicitly:
 
 Only an explicit reply naming milestone IDs counts. Then run **Authorize**.
 
+A milestone with any package that depends on an open decision cannot be
+authorized. Before suggesting an unaffected milestone, say whether it is truly
+independent of every open decision (each plausible answer leaves its packages
+unchanged). If that is uncertain, recommend waiting: code written before a
+decision tends to decide it by default and invites rework.
+
 ## Step 9: Report
 
 1. File tree created or changed.
 2. Milestones, Work Package counts, authorized milestones.
-3. Assumptions and open items.
+3. Open blocking decisions and the milestones they block; assumptions and
+   open items.
 4. Validation output (literal PASS/FAIL).
-5. Next step: start a fresh session and invoke `gated-delivery-workflow`
-   ("执行下一个工作包"). Planning context is not needed there; the files carry it.
+5. Next step: start a fresh session. With open decisions, that is
+   `technical-solution-workflow` for the decisions, then **Replan**; otherwise
+   `gated-delivery-workflow` ("执行下一个工作包"). Planning context is not
+   needed there; the files carry it.
 
 ---
 
@@ -244,18 +261,21 @@ For plans this skill did not create, follow Existing Delivery Conventions.
 
 1. Read the adapter and `docs/tasks/README.md`.
 2. Confirm the user named the milestone IDs explicitly.
-3. Check readiness and report, but do not block on it — authorization is the
+3. Refuse any named milestone that still has a package depending on an open
+   decision (HARD-GATE 4). Name the decisions and route them to
+   `technical-solution-workflow`.
+4. Check readiness and report, but do not block on it — authorization is the
    user's call:
    - earlier milestones DONE or explicitly left open;
    - milestone checkpoint rules satisfied;
    - external prerequisites (`EXT:`) available.
-4. Append the IDs to `authorized_milestones`; update `current_phase` if the
+5. Append the IDs to `authorized_milestones`; update `current_phase` if the
    milestone opens a new phase.
-5. In each newly authorized milestone file, set Work Packages whose
+6. In each newly authorized milestone file, set Work Packages whose
    dependencies are all DONE (or none) to `READY`. Leave others `BLOCKED`.
-6. Append a row to the Authorization Log in `docs/tasks/README.md`: date,
+7. Append a row to the Authorization Log in `docs/tasks/README.md`: date,
    milestone, the user's literal words.
-7. Run the checker. Report.
+8. Run the checker. Report.
 
 Dates, schedules, or "继续" never authorize a milestone. Never remove an
 authorization unless the user asks.
@@ -281,6 +301,22 @@ Triggered by a new solution version, an `ARCH_REVIEW` outcome resolved through
 6. Authorization of milestones containing revised or new work is re-confirmed
    with the user.
 7. Gate B on the delta, then write, validate, report.
+
+## Decision resolution
+
+When a new solution version resolves blocking decisions:
+
+1. Gate A for the new version, as above.
+2. In the plan index, mark each resolved decision `RESOLVED` with the version
+   and section that answers it. Decisions the new version leaves open stay
+   `OPEN` with their dependents.
+3. For each package that depended on a resolved decision: remove the
+   `DECISION:` dependency, write the fields that hinged on it, and run the
+   two-pass review.
+4. Check every DONE package against the answers, not only the listed ones:
+   Keep or Rework as above.
+5. Gate B on the delta, then write and validate. Milestones no longer tied to
+   an open decision can now be authorized.
 
 ## Format upgrade
 
@@ -310,7 +346,9 @@ this skill (the checker reports missing `Why` or `How to check`, for example):
 | "验证命令先写 make test 占位" | 只写存在的，或方案提出且 M0 会创建的命令。 |
 | "旧工作包没用了，删掉" | 标记 DROPPED 或 Superseded，保留记录和 ID。 |
 | "计划写完顺手做 M0-1" | 本 skill 不写实现代码。新会话交给 gated-delivery-workflow。 |
-| "这个细节让执行的 agent 到时候自己定" | 会改变行为、接口、数据或安全的选择就是阻塞决策，退回方案，不写进工作包。 |
+| "这个细节让执行的 agent 到时候自己定" | 会改变行为、接口、数据或安全的选择就是阻塞决策，记进索引、交给方案，不写进工作包。 |
+| "有阻塞决策，计划先不写，等定了再说" | 照样写入：决策进索引，受影响的工作包依赖它并保持阻塞。只存在对话里的计划，一压缩就没了。 |
+| "M3 不受影响，先授权跑着" | 先把每条待定决策的几种答案过一遍，确认 M3 的工作包都不变；拿不准就等，先写的代码会替决策做主。 |
 | "先建表，再写 service，最后接 API，拆三个包" | 按能工作的结果拆，不按层拆。共享契约只归一个工作包。 |
 | "Scope 里先把要改的文件列全" | Scope 只写边界。具体文件由执行时的计划决定。 |
 | "验收写：保证幂等、保证健壮" | 写可观察的行为：同一事件发两次只产生一条回复。 |
@@ -322,6 +360,7 @@ this skill (the checker reports missing `Why` or `How to check`, for example):
 | `references/decomposition-rules.md` | Steps 3–4: splitting, ordering, proof, two-pass review |
 | `references/milestone-file-format.md` | Steps 3 and 6: Work Package fields and writing rules; the checker enforces them |
 | `assets/*` | Step 6 templates |
+| `scripts/test_check_delivery_plan.py` | After changing the checker: `python3 -B scripts/test_check_delivery_plan.py` |
 | `gated-delivery-workflow/references/adapter-contract.md` | Adapter fields; the single source of truth |
 | `gated-delivery-workflow/references/verification-evidence.md` | Choosing required test layers |
 
@@ -331,7 +370,9 @@ this skill (the checker reports missing `Why` or `How to check`, for example):
 2. Gate A evidence exists in the solution document.
 3. The user confirmed the plan before files were written.
 4. Every Work Package traces to the solution; every in-scope solution section is covered.
-5. No Work Package contains an open decision, and each passed the two-pass review.
+5. No Work Package hides an open decision: each one is in the index, its
+   dependents are BLOCKED on it, and no milestone that depends on it is
+   authorized. Each package passed the two-pass review.
 6. The checker passes; warnings are reported.
 7. `authorized_milestones` contains only milestones the user named.
 8. No implementation code was written.
