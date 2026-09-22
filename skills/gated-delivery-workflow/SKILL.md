@@ -20,11 +20,15 @@ Execute one repository-approved Work Package at a time. Discover project rules f
    python3 "${CODEX_HOME:-$HOME/.codex}/skills/gated-delivery-workflow/scripts/inspect_delivery_config.py" --repo .
    ```
 
+   When this skill is installed elsewhere (for example as a Claude plugin), run the same script from this skill's own `scripts/` directory.
+
 5. Stop if the adapter is missing, invalid, unapproved, or references missing files.
 6. Read the adapter's `baseline.required_documents` in order.
 7. Run every command in `preflight.commands`.
 
 Read `references/adapter-contract.md` when creating or repairing an adapter. Do not invent project policy when the adapter is incomplete.
+
+If the adapter or milestone files are missing, stop and route to `delivery-plan-bootstrap`. For plans it created (`docs/tasks/README.md` names it), milestone files follow its `references/milestone-file-format.md`, and milestone authorization and replanning go through it instead of hand edits to `authorized_milestones`. Repositories with their own delivery conventions, such as a project-specific delivery skill, keep them.
 
 ## Select One Work Package
 
@@ -75,7 +79,7 @@ Project adapter rules override generic preferences but cannot override system sa
 
 ## Verify With Evidence
 
-Use the task's required tests and adapter `verification.commands`. Run only commands configured or justified for the repository.
+Use the task's required tests, its `How to check` commands and manual checks when the plan lists them, and adapter `verification.commands`. Run only commands configured or justified for the repository.
 
 Classify evidence as appropriate:
 
@@ -115,7 +119,7 @@ Mark a Work Package DONE only when:
 - Security and architecture reviews find no unreported drift.
 - Known limitations and skipped checks are explicit.
 
-Use `assets/work-package-handoff.md`. Stop after handoff; do not automatically start the next Work Package.
+Use `assets/work-package-handoff.md`, or the adapter's `verification.handoff_template` when set. For plans created by `delivery-plan-bootstrap`, save it as `docs/tasks/handoffs/<TASK-ID>.md` and set the Work Package's `Status` and `Evidence` fields in its milestone file; otherwise record it where the repository documents evidence. Stop after handoff; do not automatically start the next Work Package.
 
 ## Status Semantics
 
