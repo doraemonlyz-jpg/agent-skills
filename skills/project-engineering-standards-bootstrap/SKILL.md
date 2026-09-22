@@ -141,6 +141,8 @@ Do not invent architecture. Base it on approved decisions or mark the document a
 
 Include relevant rules for:
 
+- Formatting and linting: the tools, config files, and commands that are the
+  source of truth
 - Readability and simplicity
 - Naming
 - Functions, packages, and modules
