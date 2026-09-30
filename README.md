@@ -62,3 +62,24 @@ See `evals/README.md`.
 `setup/` 里是两个 Agent 的 statusline 配置，用来显示上下文用量、判断何时该开新会话。
 `setup/install.sh` 一键装 Claude Code 与 Codex 两侧，详见 `setup/README.md`。
 
+## Release
+
+同步和发布都只使用最后一次提交里的内容，未提交的改动不会被同步出去。
+
+**自动同步（推荐）：** 执行一次 `setup/release.py --install-hook`。之后在 main 上每次提交或拉取，
+都会自动跑测试，并把所有 skill 同步到 Codex（`~/.codex/skills`）和 SmartWork（`~/.SmartWork/skills`），
+同时重新生成 `dist/agent-skills.plugin`。测试不通过就不同步。
+
+**手动：**
+
+```bash
+setup/release.py <skill>            # 按 SKILL.md 里的 metadata.version 打标签，再同步
+setup/release.py --sync             # 只同步和打包，不打标签
+setup/release.py <skill> --push     # 同时推送当前分支和新标签
+setup/release.py --sync --dry-run   # 只看会做什么，不改任何东西
+```
+
+- 打标签前，SKILL.md 的 `metadata.version` 要在 CHANGELOG 里有对应的 `## <version>` 条目。
+- 已经通过 `~/.agents/skills` 链接提供的 skill，不会再复制进 `~/.codex/skills`。
+- 钩子插在 `.git/hooks/post-commit` 和 `post-merge` 的开头，原有内容（比如 Moss 的钩子）照常执行；
+  如果被其他工具覆盖，重新执行一次 `--install-hook` 即可。
