@@ -10,6 +10,7 @@ Reusable engineering skills and explicitly separated project-specific skills.
 - `delivery-plan-bootstrap`: turns an approved solution into phases, milestones, work packages, and the `.agents/delivery-workflow.json` adapter; records milestone authorization and replans after `ARCH_REVIEW`. Leaves repositories with their own delivery conventions in their format.
 - `gated-delivery-workflow`: executes repository-approved work packages through adapter-defined gates, verification, and handoff.
 - `context-handoff`: decides when a session must end and writes the handoff that auto-compaction destroys — grounded in 22 measured compaction events.
+- `first-principles-analysis`: strips system names to state the business as a decision problem, finds the few structural problems behind the symptoms, and derives the technical approach as separations, records and loops — with every claim evidence-graded and earlier proposals set aside until the end.
 
 Reusable skills live under `skills/` and can be installed independently.
 
