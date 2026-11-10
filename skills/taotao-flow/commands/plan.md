@@ -39,8 +39,9 @@ vendor 缺失时直接按 `templates/Plan-Go.md` 的结构写。
 `templates/Plan-Go.md`。硬性格式（tt:impl 的脚本按此解析）：
 
 - 任务标题必须是 `### Task N: <标题>`，`Task` 用英文单词，N 连续；
-- 每个任务含 **Files**、**Interfaces**（Consumes / Produces，写精确签名）、带复选框的步骤；
-- TDD 节奏：写失败测试 → 跑一遍确认失败 → 最小实现 → 跑通 → 提交；
+- 每个任务含 **Files**、**Interfaces**（Consumes / Produces，写精确签名）、**TDD** 类型、带复选框的步骤；
+- `**TDD:**` 取值 `bugfix` / `behavior` / `refactor` / `none — <原因>`，含义见 `commands/_tdd-evidence.md`。tt:cr 按这一行逐任务核验证据，不写默认按 behavior 检查；
+- TDD 节奏写成可执行的步骤：bugfix/behavior 为 写失败测试 → `tdd-evidence.py red`（带 `--expect` 具体失败信息）→ 最小实现 → `tdd-evidence.py green` → 提交；refactor 为 `baseline` → 重构 → `after` → 提交；
 - 每个任务以一条可独立执行的验证命令结尾（如 `go test ./internal/order/service -run TestCancelOrder -race`）；
 - 代码块必须闭合（未闭合的 ``` 会让后面的 Task 标题被解析器忽略）。
 

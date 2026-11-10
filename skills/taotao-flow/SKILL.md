@@ -2,7 +2,7 @@
 name: taotao-flow
 description: 涛涛的 Go 后端 AI 研发流水线编排器：PRD → 需求分析(ARD) → 技术设计 → 开发计划 → 测试方案 → 子 agent 逐任务编码 → CR → 提交门禁 → 归档沉淀 → 效率评测，每个阶段落盘前停下等人确认，带硬阻断/软警告门禁，串起 superpowers、samber Go skills、gopls MCP、Humanizer-zh 等第三方工具链。凡是用户输入 tt:init / tt:map / tt:ard / tt:design / tt:plan / tt:test / tt:impl / tt:cr / tt:fix / tt:mock / tt:sync / tt:archive / tt:exp / tt:eval（含 /tt:xxx、/prompts:tt-xxx 形式），或说"按流程走这个需求""出个 ARD/技术方案/开发计划""按 Plan 开始写代码""提交前 CR 一下""归档这个需求""看看这个需求 AI 帮了多少"时，都应使用本 skill。普通问答、改个变量名这类小事不要触发。
 metadata:
-  version: 2.1.0
+  version: 2.2.0
   short-description: Go 后端 AI 研发流水线编排（tt:* 命令）
 ---
 
@@ -58,7 +58,7 @@ vendor 缺失时：提示运行 `bash $FLOW_ROOT/scripts/fetch-deps.sh`，然后
 3. **门禁分两档。** 🚫 硬阻断：停下，说明缺什么、怎么恢复；⚠️ 软警告：列出问题，用户回复"继续"即放行。钩子定义见 `hooks/README.md`。
 4. **项目规约最高优先级。** `docs/rules/` 高于 Design、Plan 和任何第三方 skill 的建议。命中 `forbidden.md` → 硬阻断；引入 `tech-selection.md` 未列出的依赖 → 先问。
 5. **需求变更先改文档再改代码。** 听到"改一下""接口变了""产品要求变了"，或 ARD 比 Design 新，先走 `tt:sync`。
-6. **证据先于断言。** 说"完成/通过/修好了"之前必须跑过验证命令并看到输出（`superpowers:verification-before-completion`）。
+6. **证据先于断言。** 说"完成/通过/修好了"之前必须跑过验证命令并看到输出（`superpowers:verification-before-completion`）。TDD 同理：每个任务的红灯/绿灯由 `scripts/tdd-evidence.py` 实际运行后落盘，tt:cr 逐任务核验，全仓测试通过不能替代（协议见 `commands/_tdd-evidence.md`）。
 
 ## 工具链（替代 soda 的内部依赖）
 
@@ -123,6 +123,7 @@ docs/
     │   ├── ARD-<需求名>.md  Design-<需求名>.md  Plan-<需求名>.md  Test-<需求名>.md
     │   ├── progress.md        # 阶段状态，每个命令收尾时更新
     │   ├── eval-log.json      # 阶段计时、介入、返工（eval-log.py 维护）
+    │   ├── tdd-evidence.jsonl # 逐任务测试证据（tdd-evidence.py 写入，哈希链防改动）
     │   └── cr-status.json     # tt:cr 结论，提交门禁读取
     └── completed/YYYY-MM/<需求名>/
 .superpowers/sdd/   # tt:impl 子 agent 执行的 ledger、任务简报、评审包（自动 gitignore）

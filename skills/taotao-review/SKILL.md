@@ -2,7 +2,7 @@
 name: taotao-review
 description: Go 代码六维审查（正确性、健壮性、并发安全、安全、性能、可维护性）：先跑 vet/golangci-lint/gosec/govulncheck，再按 samber Go 规范与内置检查表逐维审，full 模式另派一个不继承上下文的独立评审子 agent（superpowers code-reviewer 模板），合并去重后按 BLOCKER/WARN/NIT 分级并给可粘贴的修复与 1–10 评分。被 taotao-flow 的 tt:cr 与 tt:impl 评审环节调用；用户说"review 一下""CR 这个分支""看看这段 Go 代码有没有问题""提 PR 前帮我过一遍"时也应使用。
 metadata:
-  version: 2.1.0
+  version: 2.2.0
   short-description: Go 六维 CR + 工具扫描 + 独立评审
 ---
 
@@ -38,6 +38,10 @@ bash <taotao-flow 目录>/scripts/go-check.sh "$PROJECT_ROOT" <BASE>
 它会依次跑 gofmt / build / vet / golangci-lint / gosec（高危单独判定）/ govulncheck / `go test -race`，结果写入 `.taotao/last-check.json`。lint 告警解读见 `samber:golang-lint`，gosec 与 govulncheck 结果解读见 `samber:golang-security`。
 
 工具结果作为输入，人工只看工具抓不到的问题。`skipped` / `error` 的工具在报告中写明「未执行」，不能算通过。
+
+## Step 2.5 — TDD 证据
+
+有需求目录时，读 `tdd-evidence.py check --json` 的结果（tt:cr 已运行则直接用）。R6 可维护性维度的「测试缺失」以它为准：逐任务列出「TDD 已验证 / 不适用 / TDD 未验证 + 缺项」。不要因为全仓测试通过就认定任务已按 TDD 完成。
 
 ## Step 3 — 加载规范
 

@@ -4,6 +4,10 @@
 
 ---
 
+## 2.2.0 — 2026-11-10 — TDD 证据
+
+R6「测试缺失」以 `tdd-evidence.py check` 的逐任务结论为准，全仓测试通过不能认定任务已按 TDD 完成。
+
 ## 2.1.0 — 2026-11-10 — 复用 go-check.sh 结果
 
 工具扫描改为读取 .taotao/last-check.json（tt:cr 已运行 go-check.sh），被跳过的工具必须在报告中写明「未执行」。

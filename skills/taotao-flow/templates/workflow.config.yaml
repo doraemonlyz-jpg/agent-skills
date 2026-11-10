@@ -31,6 +31,7 @@ commands:
     mode: subagent              # subagent：superpowers SDD 逐任务派子 agent + 评审；inline：当前会话内联执行
   cr:
     input: [taotao-review]
+    tdd_gate: warn              # TDD 未验证的处理：warn（默认，有条件通过）/ block（作为 BLOCKER）
   fix:
     input: [taotao-debug]
   mock:

@@ -52,9 +52,20 @@ Task 1: …   Task 2: …（依赖 Task 1）
 - Go 红线：`if err != nil` 全覆盖并 `%w` 包装；外部调用带 context 超时；goroutine 有退出条件；不顺手重构无关代码；本次产生的孤儿代码清掉；
 - 验证要求：任务的验证命令 + `gofmt -l` 无输出 + `go vet <包>` 通过 + `go test <包> -race`。
 
+**测试证据（每个任务必做）**：派发内容里写明本任务的 `**TDD:**` 类型和 `$FLOW_ROOT/commands/_tdd-evidence.md` 路径，要求实现子 agent 用 `$FLOW_ROOT/scripts/tdd-evidence.py` 记录：
+
+- `bugfix` / `behavior`：先写测试、**不改实现**，跑 `red`（`--cmd` 用 `-run` 限定目标测试，`--expect` 写具体失败信息）；脚本判定红灯无效时，先修测试或环境，不能跳过；实现后跑 `green`；
+- `refactor`：改动前 `baseline`，改动后 `after`；
+- 入口、集成、并发测试如果只能在实现后写，用 `verify --label 入口|集成|并发` 记录——它会注明实现后执行，不算红灯；
+- 子 agent 的完成报告里附上每条证据记录的序号与结论（脚本输出的 `✓ Task N red #k`）。
+
+脚本退出码非 0 不等于停下：红灯无效时修正测试后重跑即可；只有确认测试本身写不出有效红灯（例如行为已存在），才在执行留痕里记一条 Ruling 并改用 verify，tt:cr 会把该任务标为「TDD 未验证」。
+
 **给评审子 agent 的 Global Constraints**：从 Plan 的 Global Constraints 原样复制，并附上 `$SKILLS_DIR/taotao-review/references/go-checklist.md` 路径作为 Go 质量检查依据。
 
 **提交**：子 agent 在功能分支/worktree 上逐任务提交是允许的（Claude Code 的提交门禁 hook 对功能分支 commit 只检查敏感信息）。推送和合并要等 tt:cr。
+
+**评审时核对证据**：任务评审（spec + quality）时先跑 `tdd-evidence.py check --feature $FEATURE`，该任务为「TDD 未验证」就把缺项作为评审意见退回实现子 agent 补齐；确实无法补（测试只能在实现后写）的，保留 verify 记录并在执行留痕写明原因。
 
 **进度**：每个任务评审通过后，把 Plan 中该任务的步骤复选框全部勾为 `- [x]`，并更新 progress.md 的「当前卡点」。
 
@@ -75,6 +86,7 @@ Task 1: …   Task 2: …（依赖 Task 1）
 ```
 ✅ 实施完成「<需求名>」（subagent / inline）
 任务：N 个完成 · 评审修复 F 轮 · 裁决 R 条（见 Plan 执行留痕）
+TDD 证据：已验证 a · 不适用 b · 未验证 c（tdd-evidence.py check 输出附后）
 改动：新增 a 个文件 / 修改 b 个文件 · 提交 c 个
 规约：加载状态 … / forbidden 0 触发 / 新依赖 … / code.md 偏离 …
 验证：gofmt ✓ vet ✓ build ✓ lint ✓ test -race ✓（附命令）
@@ -83,4 +95,4 @@ Task 1: …   Task 2: …（依赖 Task 1）
 
 ## 内置兜底（vendor 缺失时）
 
-逐任务：Plan 中标记进行中 → 合规预检（FORBIDDEN / 新依赖）→ 改文件前先 Read → 按 TDD 步骤实现 → 跑任务验证命令 → 勾选完成 → 输出 `✓ Task N → 改动: …`。同一时刻只做一个任务；有前置未完成不跳；阻塞就停下说明。
+逐任务：Plan 中标记进行中 → 合规预检（FORBIDDEN / 新依赖）→ 改文件前先 Read → 按 `_tdd-evidence.md` 记录 red/baseline → 实现 → 记录 green/after → 跑任务验证命令 → 勾选完成 → 输出 `✓ Task N → 改动: …`。同一时刻只做一个任务；有前置未完成不跳；阻塞就停下说明。

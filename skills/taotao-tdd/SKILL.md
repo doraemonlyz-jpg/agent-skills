@@ -2,7 +2,7 @@
 name: taotao-tdd
 description: Go 测试驱动开发：先写失败的表驱动测试（RED），再写最少代码让它通过（GREEN），最后重构（REFACTOR）。以 superpowers 的 test-driven-development 为方法内核、samber 的 golang-testing 为 Go 约定。被 taotao-flow 的 tt:test、tt:impl、tt:fix 调用；用户说"先写测试""TDD""给这个函数补单测""怎么测这段 Go 代码""帮我 mock 掉下游"时也应使用。
 metadata:
-  version: 2.0.0
+  version: 2.1.0
   short-description: Go 测试驱动（TDD 适配层）
 ---
 
@@ -50,8 +50,17 @@ go test ./internal/order/... -run 'TestCancelOrder/已发货' -v
 go test ./... -race -count=1
 ```
 
+## 证据：每一步都要留下脚本记录
+
+在 taotao-flow 里，"我跑过了、看到失败了"不算数，要用 `taotao-flow/scripts/tdd-evidence.py` 跑，让它把命令、输出摘要、代码状态写进 `tdd-evidence.jsonl`。完整规则见 `taotao-flow/commands/_tdd-evidence.md`，要点：
+
+- 红灯命令必须用 `-run` 限定目标测试，`--expect` 写具体失败信息（`Discount\(10000\) = 10000, want 9000`、`undefined: Max`），不写 `FAIL`；
+- 改动前就通过、环境故障（网络/模块/Docker/路径）、失败在别的断言上，都会被判为无效红灯——这时修测试或环境再跑，不要绕过；
+- 纯重构用 `baseline` / `after`：改动前后同一组行为测试都通过；
+- 实现后才写的入口、集成、并发测试用 `verify --label` 记录，会注明实现后执行；它们算验证，不算 TDD。
+
 ## 按调用方
 
 - **tt:test**：为每条用例指定测试函数与子测试名，填进 Test Plan「对应测试」列；无法自动化的写手工步骤。
-- **tt:impl**：Plan 每个任务本身就是 TDD 步骤（写失败测试 → 确认失败 → 实现 → 确认通过 → 提交），子 agent 照做，不跳"确认失败"这一步。
-- **tt:fix**：先写复现 Bug 的失败测试，确认失败原因就是报告的现象，再修复到 GREEN；测试留作回归。
+- **tt:impl**：Plan 每个任务本身就是 TDD 步骤（写失败测试 → `red` → 实现 → `green` → 提交；重构为 `baseline` → 重构 → `after`），子 agent 照做，不跳"确认失败"这一步。
+- **tt:fix**：先写复现 Bug 的失败测试，用 `red --expect '<报告里的错误现象>'` 记录，确认失败原因就是报告的现象，再修复并 `green`；测试留作回归。没有需求目录时证据记到 `docs/features/active/fix-<简述>/`。

@@ -184,6 +184,140 @@ else
   echo "  · 跳过（未拉取 superpowers：scripts/fetch-deps.sh）"
 fi
 
+echo "== S7 TDD 证据：三个验收任务 + 负例"
+mkdir -p "$T/tdd/calc" && cd "$T/tdd" || exit 1
+printf 'module example.com/demo\n\ngo 1.22\n' > go.mod
+cat > calc/calc.go <<'EOF'
+package calc
+
+// Discount 满 100 元减 10 元。Bug：边界写成了 >。
+func Discount(cents int) int {
+	if cents > 10000 {
+		return cents - 1000
+	}
+	return cents
+}
+
+// Sum 求和（待重构）。
+func Sum(xs []int) int {
+	total := 0
+	for i := 0; i < len(xs); i++ {
+		total = total + xs[i]
+	}
+	return total
+}
+EOF
+cat > calc/sum_test.go <<'EOF'
+package calc
+
+import "testing"
+
+func TestSum(t *testing.T) {
+	cases := []struct {
+		in   []int
+		want int
+	}{{nil, 0}, {[]int{1, 2, 3}, 6}, {[]int{-1, 1}, 0}}
+	for _, c := range cases {
+		if got := Sum(c.in); got != c.want {
+			t.Fatalf("Sum(%v) = %d, want %d", c.in, got, c.want)
+		}
+	}
+}
+
+func TestSumUnrelated(t *testing.T) {
+	if Sum([]int{2}) != 3 {
+		t.Fatal("unrelated assertion broke")
+	}
+}
+EOF
+git init -q -b main && git add -A && $G commit -qm init
+mkdir -p docs/features/active/demo
+cat > docs/features/active/demo/Plan-demo.md <<'EOF'
+# demo Implementation Plan
+
+### Task 1: 修复满 100 元不减
+**TDD:** bugfix
+
+### Task 2: Sum 改为 range 写法
+**TDD:** refactor
+
+### Task 3: 新增 Max
+**TDD:** behavior
+
+### Task 4: 补充 README
+**TDD:** none — 纯文档
+EOF
+TE="python3 $FLOW/scripts/tdd-evidence.py"
+CK() { { $TE check --feature demo --json 2>/dev/null || true; } | python3 -c "import json,sys;d=json.load(sys.stdin);t={x['task']:x for x in d['tasks']};print(t['$1']['status'] + '|' + ';'.join(t['$1']['missing']))"; }
+
+# 负例：环境故障 / 改动前已通过 / 失败原因不符 / 无关测试失败 / 没用 -run
+check "负例：包路径不存在 → 环境故障，红灯无效" "! $TE red --feature demo --task 9 --cmd \"go test ./nope -run '^TestX$'\" --expect 'want 9000' && $TE show --feature demo --task 9 | grep -q '环境故障'"
+check "负例：改动前就通过 → 不是红灯" "! $TE red --feature demo --task 9 --cmd \"go test ./calc -run '^TestSum$'\" --expect 'want'"
+check "负例：同一命令里有测试因其他原因失败 → 无效" "! $TE red --feature demo --task 9 --cmd \"go test ./calc -run '^TestSum'\" --expect 'want [0-9]' && $TE show --feature demo --task 9 | grep -q -E '其他原因失败|不符'"
+check "负例：失败原因与 --expect 不符 → 无效" "! $TE red --feature demo --task 9 --cmd \"go test ./calc -run '^TestSumUnrelated$'\" --expect 'want 9000'"
+check "负例：未用 -run 限定 → 无效" "! $TE red --feature demo --task 9 --cmd 'go test ./calc' --expect 'unrelated'"
+printf 'package calc\n\nimport "testing"\n\nfunc TestPairA(t *testing.T) { t.Fatal("want 1, got 0") }\n\nfunc TestPairB(t *testing.T) { panic("boom") }\n' > calc/pair_test.go
+check "负例：目标测试之一按预期失败、另一个因 panic 失败 → 无效" "! $TE red --feature demo --task 9 --cmd \"go test ./calc -run '^TestPair'\" --expect 'want 1' && $TE show --feature demo --task 9 | grep -q '其他原因失败'"
+rm calc/pair_test.go
+sed -i 's/Sum(\[\]int{2}) != 3/Sum([]int{2}) != 2/' calc/sum_test.go   # 修好无关测试，后续用例干净
+
+# Task 1：Bug 修复，先红后绿
+cat > calc/discount_test.go <<'EOF'
+package calc
+
+import "testing"
+
+func TestDiscountAtThreshold(t *testing.T) {
+	if got := Discount(10000); got != 9000 {
+		t.Fatalf("Discount(10000) = %d, want 9000", got)
+	}
+}
+EOF
+check "Task 1 红灯有效（断言按预期失败）" "$TE red --feature demo --task 1 --cmd \"go test ./calc -run '^TestDiscountAtThreshold$'\" --expect 'Discount\\(10000\\) = 10000, want 9000'"
+check "Task 1 未改代码就记绿灯 → 拒绝" "! $TE green --feature demo --task 1"
+sed -i 's/cents > 10000/cents >= 10000/' calc/calc.go
+check "Task 1 绿灯有效（同一命令通过）" "$TE green --feature demo --task 1"
+check "Task 1 → TDD 已验证" "[ \"\$(CK 1)\" = 'TDD 已验证|' ]"
+
+# Task 2：纯重构，前后都绿
+check "Task 2 baseline 有效" "$TE baseline --feature demo --task 2 --cmd \"go test ./calc -run '^TestSum$'\""
+python3 - <<'PY2'
+p="calc/calc.go"; s=open(p).read()
+s=s.replace("for i := 0; i < len(xs); i++ {\n\t\ttotal = total + xs[i]\n\t}","for _, x := range xs {\n\t\ttotal += x\n\t}")
+open(p,"w").write(s)
+PY2
+check "Task 2 after 有效（同一组测试仍通过）" "$TE after --feature demo --task 2"
+check "Task 2 → TDD 已验证" "[ \"\$(CK 2)\" = 'TDD 已验证|' ]"
+
+# Task 3：先实现、后补测试
+printf '\n// Max 返回较大值。\nfunc Max(a, b int) int {\n\tif a > b {\n\t\treturn a\n\t}\n\treturn b\n}\n' >> calc/calc.go
+printf 'package calc\n\nimport "testing"\n\nfunc TestMax(t *testing.T) {\n\tif Max(1, 2) != 2 || Max(3, 1) != 3 {\n\t\tt.Fatal("Max wrong")\n\t}\n}\n' > calc/max_test.go
+check "Task 3 事后补红灯 → 无效（改动前就通过）" "! $TE red --feature demo --task 3 --cmd \"go test ./calc -run '^TestMax$'\" --expect 'Max wrong'"
+check "Task 3 没有有效红灯 → 拒绝记绿灯" "! $TE green --feature demo --task 3"
+check "Task 3 verify 记录（实现后执行）" "$TE verify --feature demo --task 3 --cmd \"go test ./calc -run '^TestMax$' -race\" --label 并发 && $TE show --feature demo --task 3 | grep -q post_impl"
+check "Task 3 → TDD 未验证，列出缺项" "CK 3 | grep -q '^TDD 未验证|改动前失败结果无效'"
+check "Task 4 none + 原因 → 不适用" "[ \"\$(CK 4)\" = '不适用|' ]"
+check "check 表格显示「TDD 未验证」与实现后补测时间" "{ $TE check --feature demo || true; } | grep -q 'Task 3.*TDD 未验证.*实现后补测（并发，执行于'"
+check "check 在有未验证任务时退出码为 1" "! $TE check --feature demo >/dev/null"
+
+# 编译型红灯（引用尚不存在的函数）
+cat >> docs/features/active/demo/Plan-demo.md <<'EOF'
+
+### Task 5: 新增 Min
+**TDD:** behavior
+EOF
+printf 'package calc\n\nimport "testing"\n\nfunc TestMin(t *testing.T) {\n\tif Min(1, 2) != 1 {\n\t\tt.Fatal("Min wrong")\n\t}\n}\n' > calc/min_test.go
+check "Task 5 编译型红灯有效（undefined: Min）" "$TE red --feature demo --task 5 --cmd \"go test ./calc -run '^TestMin$'\" --expect 'undefined: Min' && $TE show --feature demo --task 5 | grep -q '\"red_kind\": \"compile\"'"
+printf '\nfunc Min(a, b int) int {\n\tif a < b {\n\t\treturn a\n\t}\n\treturn b\n}\n' >> calc/calc.go
+check "Task 5 绿灯有效 → 已验证" "$TE green --feature demo --task 5 && [ \"\$(CK 5)\" = 'TDD 已验证|' ]"
+
+# 证据文件被手改 → 全部作废
+cp docs/features/active/demo/tdd-evidence.jsonl "$T/ev.bak"
+sed -i '1s/"exit_code": 1/"exit_code": 0/' docs/features/active/demo/tdd-evidence.jsonl
+check "证据被改动 → 哈希链损坏，全部未验证" "CK 1 | grep -q '被改动'"
+cp "$T/ev.bak" docs/features/active/demo/tdd-evidence.jsonl
+cd "$T/p1"
+
 echo "== S6 skill 文件"
 for s in "$SKILLS"/taotao-*/SKILL.md; do
   check "frontmatter $(basename "$(dirname "$s")")" "head -1 '$s' | grep -q '^---$' && sed -n '2,5p' '$s' | grep -q '^name: ' && sed -n '2,6p' '$s' | grep -q '^description: '"
