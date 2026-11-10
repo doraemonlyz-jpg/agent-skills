@@ -13,6 +13,22 @@ Reusable engineering skills and explicitly separated project-specific skills.
 
 Reusable skills live under `skills/` and can be installed independently.
 
+## taotao-flow toolchain (Go backend)
+
+A command-driven pipeline for Go services — `tt:ard → tt:design → tt:plan → tt:test → tt:impl → tt:cr → push → tt:archive → tt:eval` —
+with confirm-before-write stages, hard/soft gates, a commit gate enforced by Claude Code hooks and a git pre-push hook,
+and local lint/security scanning (golangci-lint, gosec, govulncheck). Its design follows the internal soda-ai-workflow;
+the internal dependencies are replaced by pinned open-source skills (superpowers, samber/cc-skills-golang, Humanizer-zh,
+Trail of Bits), fetched into `~/.taotao/vendor` rather than vendored here.
+
+- `taotao-flow`: the orchestrator (commands, gates, templates, scripts, `deps.lock.json`). See `skills/taotao-flow/README.md`.
+- `taotao-prd`, `taotao-clarify`, `taotao-go-standards`, `taotao-review`, `taotao-tdd`, `taotao-debug`, `taotao-impact`,
+  `taotao-mock`, `taotao-humanize`, `taotao-contract`: stage adapters it loads.
+
+Install with `setup/install-taotao.sh` (links only `taotao-*`, fetches the pinned third-party skills, generates `/tt:*`
+commands). It is an alternative to the `technical-solution-workflow → delivery-plan-bootstrap → gated-delivery-workflow`
+chain below — use one or the other per feature; `coding-standards` can be layered into `tt:impl` / `tt:cr`.
+
 ## Vendored Skills
 
 Third-party skills copied in verbatim. Each carries a `.upstream` file recording

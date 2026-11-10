@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: ard-blocks-on-thin-input
+expected_outcome: |
+  因为输入只有一句话，tt:ard 硬阻断：明确要求补充 PRD 来源（Notion 链接、文件或 URL）或 ≥3 行需求描述，不臆造需求内容，不创建任何 ARD 文件。

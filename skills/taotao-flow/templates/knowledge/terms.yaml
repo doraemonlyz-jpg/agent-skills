@@ -1,0 +1,6 @@
+# 业务术语表 —— 人工维护，tt:map 不会覆盖
+# - term: 履约单
+#   code: FulfillOrder
+#   meaning: 用户下单后生成的配送任务单，一个订单可对应多个履约单
+#   not_to_confuse: 订单（Order）
+terms: []
