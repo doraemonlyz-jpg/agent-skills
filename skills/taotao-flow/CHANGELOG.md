@@ -4,6 +4,18 @@
 
 ---
 
+## 2.2.0 — 2026-11-10 — 逐任务测试证据
+
+- 新增 `scripts/tdd-evidence.py`：实际运行 `go test` 后按任务记录证据到 `tdd-evidence.jsonl`（追加写、哈希链）。
+  - bugfix / behavior：`red`（改动前失败，失败原因须匹配 `--expect`；环境故障、改动前已通过、无关断言或 panic、未用 `-run` 限定一律判无效）→ `green`（重跑同一命令通过，且代码确有变化）。
+  - refactor：`baseline` → `after`（改动前后同一组行为测试都通过）。
+  - 实现后补的入口 / 集成 / 并发测试用 `verify` 记录，标明实现后执行与时间，不算红灯。
+  - `check` 按 Plan 中每个任务的 `**TDD:**` 类型逐任务核验，输出「TDD 已验证 / 不适用 / TDD 未验证 + 缺项」。
+- tt:plan：每个任务声明 `**TDD:**` 类型；Plan 模板的 TDD 步骤改为调用脚本。
+- tt:impl：派发给实现子 agent 时要求记录证据，任务评审时先核对证据。
+- tt:cr：新增 Step 3.5 逐任务核验，报告单列「TDD 证据」；全仓测试通过不能替代；默认作为 WARN，`cr.tdd_gate: block` 时作为 BLOCKER；cr-status.json 增加 `tdd` 字段。
+- 协议文档 `commands/_tdd-evidence.md`；自测增加 24 项（三个验收任务、编译型红灯、各类无效红灯、证据被篡改）。
+
 ## 2.1.0 — 2026-11-10 — 提交门禁 6 个 P0 与本地扫描链路
 
 依据独立评测报告修复：

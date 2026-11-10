@@ -2,6 +2,7 @@
 
 > **执行方式**：由 `tt:impl` 执行——默认按 superpowers:subagent-driven-development 逐任务派子 agent 实现并评审，无子 agent 能力时按 superpowers:executing-plans 内联执行。步骤用复选框（`- [ ]`）跟踪，完成勾 `- [x]`，废弃标 `- [~]` 不删除。
 > 任务标题必须是 `### Task N: …`（英文单词 Task + 连续编号），代码块必须闭合，否则任务解析脚本会漏读。
+> 每个任务写 `**TDD:**` 类型（bugfix / behavior / refactor / none — 原因），tt:impl 按它记录测试证据，tt:cr 按它逐任务核验（见 taotao-flow/commands/_tdd-evidence.md）。
 
 **Goal:** {一句话：这个计划交付什么}
 
@@ -41,6 +42,8 @@
 - Consumes: 无
 - Produces: `repo.Order.CancelReason string`（列 `cancel_reason VARCHAR(255) NOT NULL DEFAULT ''`）
 
+**TDD:** none — migration 文件本身没有可单测的行为；由 Task 2 的 repo 测试覆盖新列
+
 - [ ] **Step 1: 写 up/down migration**
 - [ ] **Step 2: 本地库执行 up → down → up，确认可回滚**
 
@@ -58,6 +61,8 @@ Expected: 三次执行均成功
 **Interfaces:**
 - Consumes: Task 1 的 `CancelReason` 字段
 - Produces: `func (s *Store) Cancel(ctx context.Context, id int64, from []Status, reason string) (bool, error)` —— 条件更新，返回是否命中
+
+**TDD:** behavior
 
 - [ ] **Step 1: 写失败测试**
 
@@ -79,28 +84,34 @@ func TestStore_Cancel(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: 运行确认失败**
+- [ ] **Step 2: 记录红灯（不改实现）**
 
-Run: `go test ./internal/order/repo -run TestStore_Cancel -v`
-Expected: FAIL（Cancel 未定义）
+Run: `python3 $FLOW_ROOT/scripts/tdd-evidence.py red --feature {需求名} --task 2 --cmd "go test ./internal/order/repo -run '^TestStore_Cancel$'" --expect 'Cancel undefined|undefined: .*Cancel'`
+Expected: ✓ 红灯有效（编译失败：Cancel 未定义）
 
 - [ ] **Step 3: 最小实现（`UPDATE … WHERE id = ? AND status IN (?)`，占位符参数）**
-- [ ] **Step 4: 运行确认通过**
+- [ ] **Step 4: 记录绿灯**
 
-Run: `go test ./internal/order/repo -run TestStore_Cancel -race -v`
-Expected: PASS
+Run: `python3 $FLOW_ROOT/scripts/tdd-evidence.py green --feature {需求名} --task 2`
+Expected: ✓ 绿灯有效（同一命令通过）
 
 - [ ] **Step 5: 提交**
 
 ### Task 3: {service 层：状态校验 + 幂等 + 事务}
 
+**TDD:** behavior
+
 …同上结构…
 
 ### Task 4: {接口层：handler / RPC 实现，参数校验与错误码映射}
 
+**TDD:** behavior（handler 的 httptest 用例若只能在实现后写，用 `tdd-evidence.py verify --label 入口` 记录，会标为 TDD 未验证）
+
 …
 
 ### Task 5: {健壮性与可观测：下游超时/重试/降级、日志字段、metrics}
+
+**TDD:** behavior
 
 …
 
@@ -108,12 +119,19 @@ Expected: PASS
 
 **Files:** 无新增
 
+**TDD:** none — 全量检查任务，不新增行为；`tdd-evidence.py check` 在此处跑一遍
+
 - [ ] **Step 1: 全量检查**
 
 Run: `gofmt -l . && go vet ./... && golangci-lint run --new-from-rev={base} && go test ./... -race -count=1`
 Expected: 无输出 / 全部 PASS
 
-- [ ] **Step 2: 清理调试输出与注释代码；必要时 tt:map --update**
+- [ ] **Step 2: 核对测试证据**
+
+Run: `python3 $FLOW_ROOT/scripts/tdd-evidence.py check --feature {需求名}`
+Expected: 每个 bugfix/behavior/refactor 任务为「TDD 已验证」；未验证的写入执行留痕并说明原因
+
+- [ ] **Step 3: 清理调试输出与注释代码；必要时 tt:map --update**
 
 ---
 
