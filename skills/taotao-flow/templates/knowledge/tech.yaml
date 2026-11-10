@@ -1,0 +1,8 @@
+# 技术栈快照 —— tt:map 首次生成，tt:archive 每次对账
+scanned_at: null
+scanned_by: null
+go_version: null
+module: null
+dependencies:
+  core: []      # - { name: github.com/gin-gonic/gin, version: v1.9.1, purpose: HTTP 框架 }
+middleware: []  # - { name: mysql, purpose: 主库, config: configs/db.yaml }

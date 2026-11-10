@@ -1,0 +1,48 @@
+# taotao-flow 项目配置
+# 规则：文件不存在 / 字段为空 = 使用内置默认（见 taotao-flow/project-types.yaml）；只覆盖你写了的部分。
+version: '2.0'
+
+project:
+  name: __PROJECT_NAME__
+  type: __PROJECT_TYPE__        # backend-go | backend-go-rpc
+
+# 跨阶段切片：执行到阶段 X 时，若 <skill>/X.md 存在就织入。不需要契约优先时改成 []
+inputSlot: [taotao-contract]
+
+# 每个阶段：
+#   input  —— 开始前按顺序 Read 并执行的 skill。可写 taotao-*、你自己的 skill，或第三方引用：
+#             samber:golang-grpc  superpowers:brainstorming  tob:differential-review/differential-review
+#   output —— 模板（相对 taotao-flow/templates/；以 ./ 开头表示项目内路径）
+commands:
+  ard:
+    input: [taotao-clarify]
+    output: [ARD.md]
+  design:
+    input: __DESIGN_INPUT__
+    output: [Design-Go.md]
+  plan:
+    input: []
+    output: [Plan-Go.md]
+  test:
+    input: [taotao-tdd]
+    output: [Test-Go.md]
+  impl:
+    input: [taotao-go-standards]
+    mode: subagent              # subagent：superpowers SDD 逐任务派子 agent + 评审；inline：当前会话内联执行
+  cr:
+    input: [taotao-review]
+  fix:
+    input: [taotao-debug]
+  mock:
+    input: [taotao-mock]
+  sync:
+    input: []
+
+# 同仓库（agent-skills）里的其他 skill 可以这样配合：
+#   impl.input: [taotao-go-standards, coding-standards]   # 最小改动、外科手术式修改、项目风格——与 tt:impl 规则一致，可直接叠加
+#   cr.input:   [taotao-review, coding-standards]
+#   ard.input:  [interview-me, taotao-clarify]           # interview-me 会写自己的 spec 文档：只借它的追问，结论交回 ARD
+# 不要和 tt 流程混用的（它们是另一套完整流水线，阶段、产物路径和门禁都不同）：
+#   technical-solution-workflow / delivery-plan-bootstrap / gated-delivery-workflow
+# 项目初始化前可先跑 project-engineering-standards-bootstrap 生成工程规范，再把结论填进 docs/rules/。
+# 长会话（tt:impl 跑很多任务）接近上下文上限时，用 context-handoff 写交接。

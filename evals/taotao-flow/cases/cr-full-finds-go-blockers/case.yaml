@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: cr-full-finds-go-blockers
+expected_outcome: |
+  审查 internal/order/service/cancel.go，至少报出这些 BLOCKER：SQL 字符串拼接注入、ExecContext 错误被丢弃、goroutine 中并发写全局 map、http.Get 无超时且错误未处理；给出文件:行与修复代码；结论为不通过，并写出 result 为 fail 的 cr-status.json。

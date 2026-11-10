@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: init-and-map-go-repo
+expected_outcome: |
+  项目里生成 docs/rules、docs/knowledge、docs/features 骨架和 workflow.config.yaml，CLAUDE.md 与 AGENTS.md 含规则块；docs/knowledge 下有基于 go list 的 packages.yaml（含 hubs）、api.yaml（含 /api/v1/order/get 路由）、manifest.yml，index.md 填了模块和枢纽表。

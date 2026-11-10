@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: plan-superpowers-format
+expected_outcome: |
+  基于已有的 ARD 与 Design 输出完整开发计划全文并停下等确认（不落盘）。计划使用 "### Task N:" 英文任务标题，含 Spec 指向 Design、Global Constraints、Review Focus，每个任务有 Files、Interfaces（精确签名）、TDD 步骤和可执行的 go test 验证命令；migration 任务排在 repo 之前，并发取消有对应测试；不写 docs/superpowers/ 下任何文件。

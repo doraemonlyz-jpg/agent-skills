@@ -1,0 +1,102 @@
+{
+  "_comment": "第三方 skill 锁定清单。fetch-deps.sh 按 commit 精确拉取到 ~/.taotao/vendor/<name>/；升级用 scripts/bump-deps.sh。",
+  "vendor_dir": "~/.taotao/vendor",
+  "deps": [
+    {
+      "name": "superpowers",
+      "repo": "https://github.com/obra/superpowers.git",
+      "commit": "22f0b463e7a5e579904dd6211a520321035526f7",
+      "license": "MIT",
+      "used_for": "brainstorming / writing-plans / subagent-driven-development / executing-plans / test-driven-development / systematic-debugging / requesting-code-review / verification-before-completion / using-git-worktrees / finishing-a-development-branch",
+      "expose": false,
+      "_why_not_exposed": "它的 using-superpowers 与 brainstorming 会自动接管所有开发任务，和 tt:* 流程抢主导权；只由 taotao 适配层按路径读取"
+    },
+    {
+      "name": "cc-skills-golang",
+      "repo": "https://github.com/samber/cc-skills-golang.git",
+      "commit": "d68d80aec298e1b74b37c2a472c002b5217248b3",
+      "license": "MIT",
+      "used_for": "Go 规范与专项知识：code-style / error-handling / context / concurrency / testing / security / database / grpc / gopls / lint / troubleshooting 等 47 个",
+      "expose": true,
+      "expose_glob": "skills/golang-*"
+    },
+    {
+      "name": "humanizer-zh",
+      "repo": "https://github.com/op7418/Humanizer-zh.git",
+      "commit": "f4518a8eab97b8bfebc66a89d34320a89bef6930",
+      "license": "MIT",
+      "used_for": "中文文档去模板化表达",
+      "expose": false
+    },
+    {
+      "name": "trailofbits-skills",
+      "repo": "https://github.com/trailofbits/skills.git",
+      "commit": "e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff",
+      "license": "CC-BY-SA-4.0",
+      "used_for": "differential-review（改动爆炸半径 + 未覆盖测试）/ insecure-defaults / static-analysis（semgrep）",
+      "expose": false
+    }
+  ],
+  "claude_plugins": [
+    {
+      "id": "gopls-lsp@claude-plugins-official",
+      "used_for": "Claude Code 原生 LSP：定义跳转、引用、诊断"
+    },
+    {
+      "id": "code-review@claude-plugins-official",
+      "used_for": "PR 级多 agent 置信度评审（可选，tt:cr --pr）"
+    }
+  ],
+  "mcp_servers": [
+    {
+      "name": "gopls",
+      "command": "gopls mcp",
+      "used_for": "go_search / go_symbol_references / go_package_api / go_workspace / go_vulncheck"
+    },
+    {
+      "name": "notion",
+      "url": "https://mcp.notion.com/mcp",
+      "used_for": "读取 Notion 上的 PRD"
+    }
+  ],
+  "tools": [
+    {
+      "name": "gopls",
+      "install": "go install golang.org/x/tools/gopls@latest",
+      "required": true
+    },
+    {
+      "name": "golangci-lint",
+      "install": "brew install golangci-lint",
+      "required": true,
+      "used_for": "lint（替代 dlinter 的代码质量部分）"
+    },
+    {
+      "name": "gosec",
+      "install": "go install github.com/securego/gosec/v2/cmd/gosec@latest",
+      "required": true,
+      "used_for": "安全扫描；高危 → 门禁硬失败"
+    },
+    {
+      "name": "govulncheck",
+      "install": "go install golang.org/x/vuln/cmd/govulncheck@latest",
+      "required": true,
+      "used_for": "依赖漏洞（只报实际调用到的）；命中 → 门禁硬失败"
+    },
+    {
+      "name": "mockery",
+      "install": "go install github.com/vektra/mockery/v2@latest",
+      "required": false
+    },
+    {
+      "name": "prism",
+      "install": "npm i -g @stoplight/prism-cli",
+      "required": false
+    },
+    {
+      "name": "ccusage",
+      "install": "npm i -g ccusage",
+      "required": false
+    }
+  ]
+}

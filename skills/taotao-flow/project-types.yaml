@@ -1,0 +1,35 @@
+# 项目类型注册表：init 按检测规则选类型，生成 workflow.config.yaml 的默认值。
+# 新增类型只需在这里追加，不用改 init 脚本。detect 按顺序匹配，命中第一个即停。
+#
+# detect.go_mod_any: go.mod 中出现任一模块路径即命中
+# inputSlot: 默认启用的跨阶段切片
+# commands.<cmd>.input / output: 该类型的默认 skill 与模板
+
+project_types:
+  - id: backend-go-rpc
+    label: Go RPC 服务（gRPC / Kitex / Thrift）
+    detect:
+      go_mod_any: [google.golang.org/grpc, github.com/cloudwego/kitex, github.com/apache/thrift, connectrpc.com/connect]
+    inputSlot: [taotao-contract]
+    commands:
+      design: { input: ['samber:golang-grpc'], output: [Design-Go.md] }
+
+  - id: backend-go
+    label: Go HTTP 服务 / 通用 Go 后端
+    detect:
+      go_mod_any: []        # 兜底：有 go.mod 即可
+    inputSlot: [taotao-contract]
+    commands:
+      design: { input: [], output: [Design-Go.md] }
+
+# 所有类型共用
+defaults:
+  commands:
+    ard:    { input: [taotao-clarify], output: [ARD.md] }
+    plan:   { input: [], output: [Plan-Go.md] }
+    test:   { input: [taotao-tdd], output: [Test-Go.md] }
+    impl:   { input: [taotao-go-standards], mode: subagent }
+    cr:     { input: [taotao-review] }
+    fix:    { input: [taotao-debug] }
+    mock:   { input: [taotao-mock] }
+    sync:   { input: [] }

@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# taotao-flow git pre-push hook（由 tt:init 安装到 .git/hooks/pre-push）。
+# git 原生 hook 对所有推送方式生效：Claude Code、Codex、IDE、终端、bash -c、绝对路径 git……
+# 复用 commit-gate.sh：无 CR / CR 失败 / 结论异常 / 扫描硬失败 / CR 后又改代码 / 敏感信息 → 拒绝推送。
+# 紧急通道：TAOTAO_GATE=off git push（跳过 CR 与扫描检查，敏感信息仍拦截，写审计日志）；git push --no-verify 完全跳过。
+# taotao-flow-git-hook
+
+FLOW=""
+for d in "${TAOTAO_FLOW_ROOT:-}" "$HOME/.agents/skills/taotao-flow" "$HOME/.claude/skills/taotao-flow" "$HOME/.codex/skills/taotao-flow"; do
+  if [ -n "$d" ] && [ -f "$d/scripts/commit-gate.sh" ]; then FLOW="$d"; break; fi
+done
+[ -n "$FLOW" ] || exit 0          # 本机没装 taotao-flow：不拦
+command -v python3 >/dev/null 2>&1 || { echo "taotao-flow pre-push: 未找到 python3，门禁无法运行，已阻止推送（git push --no-verify 可跳过）" >&2; exit 1; }
+
+ROOT="$(git rev-parse --show-toplevel)"
+ZERO="0000000000000000000000000000000000000000"
+trunk=""
+for b in origin/master origin/main master main; do git rev-parse --verify -q "$b" >/dev/null && { trunk="$b"; break; }; done
+
+status=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ -n "$local_sha" ] || continue
+  case "$local_sha" in *[!0]*) ;; *) continue ;; esac            # 删除远端分支
+  if [ -z "$remote_sha" ] || [ "${remote_sha//0/}" = "" ]; then   # 新分支：从主干分叉点开始扫
+    base=""; [ -n "$trunk" ] && base="$(git merge-base "$local_sha" "$trunk" 2>/dev/null)"
+    if [ -n "$base" ] && [ "$base" != "$local_sha" ]; then range="$base..$local_sha"; else range="$local_sha"; fi
+  else
+    range="$remote_sha..$local_sha"
+  fi
+  out="$(bash "$FLOW/scripts/commit-gate.sh" "$ROOT" --range "$range")"
+  verdict="$(printf '%s' "$out" | python3 -c 'import json,sys
+try: print(json.load(sys.stdin).get("verdict","block_gate_error"))
+except Exception: print("block_gate_error")')"
+
+  if [ "$verdict" = "block_sensitive" ] || [ "$verdict" = "block_gate_error" ]; then
+    echo "✗ taotao-flow 门禁拒绝推送 $local_ref（$verdict）：" >&2
+    printf '%s' "$out" | python3 -c 'import json,sys
+d=json.load(sys.stdin)
+for x in d.get("sensitive",[]): print("  -", x.get("file"), x.get("type"), file=sys.stderr)
+if d.get("error"): print("  ", d["error"][-300:], file=sys.stderr)' || true
+    status=1; continue
+  fi
+  if [ "${TAOTAO_GATE:-on}" = "off" ]; then
+    mkdir -p "$ROOT/.taotao"
+    printf '%s\t%s\t%s\tpre-push\tTAOTAO_GATE=off\tverdict=%s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$local_ref" "${local_sha:0:7}" "$verdict" >> "$ROOT/.taotao/gate-audit.log"
+    echo "⚠ taotao-flow：TAOTAO_GATE=off，已跳过 CR/扫描检查（原判定 $verdict），上线后请补 tt:cr。" >&2
+    continue
+  fi
+  case "$verdict" in
+    block_*)
+      echo "✗ taotao-flow 门禁拒绝推送 $local_ref（$verdict）。先执行 tt:cr / tt:cr --recheck；紧急情况 TAOTAO_GATE=off git push。" >&2
+      printf '%s' "$out" | python3 -c 'import json,sys
+d=json.load(sys.stdin)
+for p in d.get("cr_problems",[]): print("  -", p, file=sys.stderr)
+for f in (d.get("scope") or {}).get("changed_after_cr",[]): print("  - CR 后改动:", f, file=sys.stderr)
+for f in (d.get("checks") or {}).get("hard_failed",[]): print("  - 扫描硬失败:", f, file=sys.stderr)' || true
+      status=1 ;;
+    warn|soft_no_cr)
+      printf '%s' "$out" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("⚠ taotao-flow:", "；".join(d.get("warnings") or ["fix/hotfix 分支没有 CR 记录"]), file=sys.stderr)' ;;
+  esac
+done
+exit $status
